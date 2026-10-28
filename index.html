@@ -133,6 +133,11 @@ html:root[data-tema="prata"]{--bg:#5a3a9a;--bg2:#2f1b5c;--wine:#5b3a9a;--gold:#d
 .dcuid{margin:12px 0;padding:10px 12px;border:1px dashed var(--mut);border-radius:8px;font-size:1rem;line-height:1.3}
 .dcuid b{display:block;font-family:"Playfair Display",Georgia,serif;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
 .dcuid p{margin:0}
+.busca{position:relative;max-width:520px;margin:18px auto 0;padding:0 16px}
+.busca input{margin:0;padding:12px 44px 12px 40px;border-radius:999px;font-family:"Cormorant Garamond",Georgia,serif;font-weight:600;font-size:1.1rem;-webkit-appearance:none;appearance:none}
+.busca input::-webkit-search-cancel-button{display:none}
+.busca .lupa{position:absolute;left:30px;top:50%;transform:translateY(-50%);color:var(--mut);pointer-events:none;font-size:1.05rem}
+.busca .lim{position:absolute;right:24px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--mut);font-size:1.1rem;padding:6px 8px}
 </style>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5102740909764926"
      crossorigin="anonymous"></script>
@@ -147,6 +152,7 @@ html:root[data-tema="prata"]{--bg:#5a3a9a;--bg2:#2f1b5c;--wine:#5b3a9a;--gold:#d
 <div class="div">♥</div>
 </header>
 <div id="vloja">
+<form class="busca" role="search" onsubmit="event.preventDefault();this.q.blur()"><span class="lupa" aria-hidden="true">⌕</span><input type="search" name="q" id="busca" placeholder="Pesquisar peça ou código" aria-label="Pesquisar peças pelo nome ou código" autocomplete="off" autocapitalize="off" enterkeyhint="search" oninput="buscar(this.value)"><button type="button" class="lim" id="buscaX" onclick="limparBusca(true)" aria-label="Limpar pesquisa" hidden>✕</button></form>
 <h2 class="t" id="titulo"></h2>
 <div class="volt" id="volt"></div>
 <div class="cores" id="cores"></div>
@@ -281,7 +287,15 @@ const brl = n => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL",
 const carrinho = {};
 const fotoLink = p => /^https?:\/\//.test(FOTOS[p.foto] || "") ? "\nFoto: " + FOTOS[p.foto] : "";
 function foto(p) { const s = FOTOS[p.foto]; return s ? `<img src="${s}" alt="${p.nome}">` : ""; }
-let fLinha = "todos", fTipo = "todos", fCor = "todos";
+let fLinha = "todos", fTipo = "todos", fCor = "todos", fBusca = "";
+const normB = t => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+function achaBusca(p, q) {
+  const L = LINHAS.find(l => l.id === p.linha), T = TIPOS.find(x => x.id === p.tipo), C = CORES.find(x => x.id === p.cor);
+  const txt = normB([p.nome, p.desc, p.detalhes, L && L.nome, T && T.nome, C && C.nome].join(" ")), cod = String(p.id);
+  return q.split(/\s+/).filter(w => !/^(cod|codigo|n|no|num)$/.test(w)).every(w => /^\d+$/.test(w) ? cod.includes(w) : (txt.includes(w) || txt.includes(w.replace(/s$/, ""))));
+}
+function buscar(v) { fBusca = normB(v).replace(/[#:.]/g, " ").trim(); mostrar("loja", true); desenhar(); }
+function limparBusca(foco) { const i = document.getElementById("busca"); i.value = ""; fBusca = ""; desenhar(); if (foco) i.focus(); }
 // ===== TEXTOS DE "SOBRE AS PEÇAS" (edite à vontade) =====
 const SOBRE = [
   {"linha":"inox","texto":"Peças de aço inoxidável: um material resistente que não escurece com o uso comum do dia a dia. É a nossa linha mais durável, e é nela que ficam as alianças."},
@@ -353,13 +367,13 @@ function perguntar(id) {
   const p = PRODUTOS.find(x => x.id === id);
   window.open(`https://wa.me/${LOJA.whatsapp}?text=${encodeURIComponent(`Olá! Gostaria de saber o valor: ${p.nome} (Cód. ${p.id})${fotoLink(p)}`)}`, "_blank");
 }
-function mostrar(v) {
+function mostrar(v, manter) {
   document.getElementById("vloja").hidden = v !== "loja";
   document.getElementById("vsobre").hidden = v !== "sobre";
-  window.scrollTo({ top: 0 });
+  if (!manter) window.scrollTo({ top: 0 });
 }
-function irCor(c) { fCor = c; aplicarTema(fLinha); fecharMenu(); mostrar("loja"); desenhar(); }
-function ir(l, t) { fLinha = l; fTipo = t; if (l === "todos" && t === "todos") fCor = "todos"; aplicarTema(l); fecharMenu(); mostrar("loja"); desenhar(); }
+function irCor(c) { fBusca = ""; document.getElementById("busca").value = ""; fCor = c; aplicarTema(fLinha); fecharMenu(); mostrar("loja"); desenhar(); }
+function ir(l, t) { fBusca = ""; document.getElementById("busca").value = ""; fLinha = l; fTipo = t; if (l === "todos" && t === "todos") fCor = "todos"; aplicarTema(l); fecharMenu(); mostrar("loja"); desenhar(); }
 function abrirSobre() { aplicarTema(""); fecharMenu(); mostrar("sobre"); }
 function abrirMenu() { document.getElementById("menu").classList.add("on"); }
 function fecharMenu() { document.getElementById("menu").classList.remove("on"); }
@@ -397,13 +411,15 @@ function menuHTML() {
 function desenhar() {
   const L = LINHAS.find(l => l.id === fLinha), T = TIPOS.find(x => x.id === fTipo), C = CORES.find(x => x.id === fCor);
   document.getElementById("cores").innerHTML = [{ id: "todos", nome: "Todas" }].concat(CORES).map(c => `<button class="${fCor === c.id ? "on" : ""}" onclick="irCor('${c.id}')">${c.nome}</button>`).join("");
-  const lista = PRODUTOS.filter(p => (fLinha === "todos" || p.linha === fLinha) && (fTipo === "todos" || p.tipo === fTipo) && (fCor === "todos" || p.cor === fCor));
-  document.getElementById("titulo").innerHTML = (L || T || C) ? `<em class="gold">${[T && T.nome, L && L.nome, C && C.nome].filter(Boolean).join(" · ")}</em>` : `Escolha <em class="gold">sua</em> peça`;
-  document.getElementById("volt").innerHTML = (L || T || C) ? `<button onclick="ir('todos','todos')">← ver todas as peças</button>` : "";
+  const lista = fBusca ? PRODUTOS.filter(p => achaBusca(p, fBusca)) : PRODUTOS.filter(p => (fLinha === "todos" || p.linha === fLinha) && (fTipo === "todos" || p.tipo === fTipo) && (fCor === "todos" || p.cor === fCor));
+  document.getElementById("buscaX").hidden = !fBusca;
+  document.getElementById("cores").hidden = !!fBusca;
+  document.getElementById("titulo").innerHTML = fBusca ? `<em class="gold">${lista.length} resultado${lista.length === 1 ? "" : "s"}</em>` : (L || T || C) ? `<em class="gold">${[T && T.nome, L && L.nome, C && C.nome].filter(Boolean).join(" · ")}</em>` : `Escolha <em class="gold">sua</em> peça`;
+  document.getElementById("volt").innerHTML = fBusca ? "" : (L || T || C) ? `<button onclick="ir('todos','todos')">← ver todas as peças</button>` : "";
   const av = document.getElementById("aviso");
-  av.hidden = !(T && T.aviso);
+  av.hidden = !(T && T.aviso) || !!fBusca;
   av.innerHTML = T && T.aviso ? `<p>✦ ${T.aviso}</p><a class="add lnk" href="https://wa.me/${LOJA.whatsapp}?text=${encodeURIComponent("Olá! Gostaria de ver mais modelos de alianças.")}" target="_blank" rel="noopener">Consultar no WhatsApp</a>` : "";
-  document.getElementById("grid").innerHTML = lista.length ? lista.map(cardHTML).join("") : `<div class="vazio">Em breve por aqui ✦<br>Chame a gente no WhatsApp para saber das novidades.</div>`;
+  document.getElementById("grid").innerHTML = lista.length ? lista.map(cardHTML).join("") : `<div class="vazio">${fBusca ? "Não encontramos essa peça ✦<br>Tente outra palavra ou o código, ou chame a gente no WhatsApp." : "Em breve por aqui ✦<br>Chame a gente no WhatsApp para saber das novidades."}</div>`;
   document.getElementById("mconteudo").innerHTML = menuHTML();
 }
 function mudar(id, d) {
