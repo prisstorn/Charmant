@@ -90,6 +90,20 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </section>
 
 <section>
+<h2>Cards da página inicial</h2>
+<div id="lcards"></div>
+<label for="kfile" style="margin-top:14px">Nova imagem</label><input type="file" id="kfile" accept="image/*">
+<label for="kurl">Ou cole o link da imagem</label><input id="kurl" placeholder="https://...">
+<label for="ktitulo">Título (opcional, descreve a imagem)</label><input id="ktitulo">
+<label for="kalvo">Ao tocar no card</label><select id="kalvo"></select>
+<label for="kvalor">Código do produto ou link (se escolheu acima)</label><input id="kvalor">
+<div style="margin-top:12px"><button id="kAdd">Adicionar card</button></div>
+<p class="hint" id="kst"></p>
+<input type="file" id="ktroca" accept="image/*" hidden>
+<p class="hint">Os cards aparecem no topo da página inicial, com a imagem inteira, e deslizam para o lado. Use “Trocar imagem” para mudar só a foto de um card.</p>
+</section>
+
+<section>
 <h2>Fotos na nuvem (Cloudinary)</h2>
 <div class="row2"><div><label for="ccloud">Cloud name</label><input id="ccloud" autocapitalize="off"></div>
 <div><label for="cpreset">Upload preset (unsigned)</label><input id="cpreset" autocapitalize="off"></div></div>
@@ -104,7 +118,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <div class="bgal" id="bgal"></div>
 <label for="blista">2. Uma linha por produto: a linha 1 vale para a foto 1, a 2 para a foto 2…</label>
 <textarea id="blista" style="min-height:150px" placeholder="Brinco Estrela Folheada, Prata, Folheados, R$12&#10;Brinco Flor Zircônia, Dourado, Banhados, R$24"></textarea>
-<p class="hint">Em cada linha: nome primeiro e, depois, cor, linha e preço separados por vírgula, em qualquer ordem. O tipo (Brincos, Colares…) é descoberto pelo nome. Se não der (ex.: Argola), escreva o tipo na linha. A descrição é criada sozinha e você pode editar abaixo.</p>
+<p class="hint">Em cada linha: nome primeiro e, depois, cor, linha e preço separados por vírgula, em qualquer ordem. O tipo (Brincos, Colares…) é descoberto pelo nome. Se não der (ex.: Argola), escreva o tipo na linha. A descrição é criada sozinha e você pode editar abaixo. Para várias fotos do mesmo produto, escreva “3 fotos” na linha. Para uma foto com peças numeradas, em que a cliente escolhe o número, escreva “variação 3”.</p>
 <div id="bprev"></div>
 <div style="margin-top:12px"><button id="bAdd" disabled>Adicionar todos</button></div>
 <p class="hint" id="bst"></p>
@@ -124,6 +138,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <label for="fotos">Fotos (a primeira é a principal)</label><input type="file" id="fotos" accept="image/*" multiple>
 <div class="prev" id="prev"></div>
 <label for="links">Ou cole links de imagens (um por linha)</label><textarea id="links" placeholder="https://..."></textarea>
+<label for="nvar">Variações numeradas na foto (opcional)</label><input id="nvar" inputmode="numeric" placeholder="Ex.: 3, se a foto mostra 3 peças com números 1, 2 e 3">
 <p class="hint">O código do produto (5 números) é criado sozinho ao adicionar.</p>
 <div style="margin-top:14px"><button id="addBtn">Adicionar produto</button></div>
 </section>
@@ -147,7 +162,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <div id="toast"></div>
 
 <script>
-let src = "", rg = null, P = [], F = {}, LIN = [], TIP = [], SOB = [], COR = [], CB = "", dirty = false, novas = [];
+let src = "", rg = null, P = [], F = {}, LIN = [], TIP = [], SOB = [], CAR = [], COR = [], CB = "", dirty = false, novas = [];
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const brl = n => n == null ? "Consulte" : n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -168,25 +183,27 @@ function marcar(d) {
 }
 $("arq").onchange = async e => { const f = e.target.files[0]; if (!f) return; ghOn = false; $("publicar").hidden = true; await carregar(await f.text()); };
 async function carregar(texto) {
+  const srcAnt = src, rgAnt = rg;
   try {
     src = texto;
     const p = lit("PRODUTOS", "\n];", 2), fo = lit("FOTOS", "};", 1);
-    const li = lit("LINHAS", "\n];", 2), ti = lit("TIPOS", "\n];", 2), so = lit("SOBRE", "\n];", 2), co = lit("CORES", "\n];", 2), cb = lit("CUIDADOS_BASE", "\n];", 2);
-    rg = [["L", li], ["T", ti], ["P", p], ["S", so], ["F", fo], ["C", cb]];
-    P = ler(p[2]); F = ler(fo[2]); LIN = ler(li[2]); TIP = ler(ti[2]); SOB = ler(so[2]); COR = ler(co[2]); CB = ler(cb[2])[0] || "";
+    const li = lit("LINHAS", "\n];", 2), ti = lit("TIPOS", "\n];", 2), so = lit("SOBRE", "\n];", 2), co = lit("CORES", "\n];", 2), cb = lit("CUIDADOS_BASE", "\n];", 2), ka = lit("CARDS", "\n];", 2);
+    rg = [["L", li], ["T", ti], ["P", p], ["S", so], ["F", fo], ["C", cb], ["K", ka]];
+    P = ler(p[2]); F = ler(fo[2]); LIN = ler(li[2]); TIP = ler(ti[2]); SOB = ler(so[2]); CAR = ler(ka[2]); P.forEach(p => { if (p.vars) { p.mais = p.vars.slice(1); delete p.vars; } }); COR = ler(co[2]); CB = ler(cb[2])[0] || "";
     $("cb").value = CB; $("cor").innerHTML = '<option value="">Escolha…</option>' + COR.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join("");
     $("painel").hidden = false; $("bar").hidden = false;
     atualizarSelects(); desenhar(); marcar(false);
     $("st").textContent = "Nenhuma alteração ainda"; $("st").className = "";
     toast("Site carregado com " + P.length + " produtos");
-  } catch (err) { alert("Não consegui ler os dados do site.\n(" + err.message + ")\n\nRecebi " + String(texto).length + " caracteres. Começo:\n" + String(texto).slice(0, 120)); }
+    return true;
+  } catch (err) { src = srcAnt; rg = rgAnt; alert("Não consegui ler os dados do site.\n(" + err.message + ")\n\nRecebi " + String(texto).length + " caracteres. Começo:\n" + String(texto).slice(0, 120)); return false; }
 }
 let ghOn = false, shaAtual = "", GH = { repo: "", branch: "main", token: "" };
 try { GH = Object.assign(GH, JSON.parse(localStorage.getItem("charmantGH"))); } catch (e) {}
 $("ghrepo").value = GH.repo; $("ghbranch").value = GH.branch || "main"; $("ghtoken").value = GH.token;
 const ghUrl = () => "https://api.github.com/repos/" + GH.repo + "/contents/index.html";
 const ghHead = a => ({ Authorization: "Bearer " + GH.token, Accept: a || "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" });
-const ghMsg = st => ({ 401: "Token inválido ou vencido.", 403: "O token não tem permissão neste repositório.", 404: "Não achei o repositório, a branch ou o index.html. Confira os dados.", 409: "O site mudou desde que você o carregou. Carregue de novo.", 422: "O site mudou desde que você o carregou. Carregue de novo." }[st] || "Erro " + st + " do GitHub.");
+const ghMsg = st => ({ 401: "Token inválido ou vencido.", 403: "O token não tem permissão de escrita neste repositório. No GitHub, edite o token e deixe Contents em Read and write.", 404: "Não achei o repositório, a branch ou o index.html. Confira os dados.", 409: "O site mudou desde que você o carregou. Carregue de novo.", 422: "O site mudou desde que você o carregou. Carregue de novo." }[st] || "Erro " + st + " do GitHub.");
 $("ghLoad").onclick = async () => {
   GH = { repo: $("ghrepo").value.trim(), branch: $("ghbranch").value.trim() || "main", token: $("ghtoken").value.trim() };
   if (!/^[\w.-]+\/[\w.-]+$/.test(GH.repo) || !GH.token) return alert("Preencha o repositório (usuario/nome) e o token.");
@@ -208,8 +225,8 @@ $("ghLoad").onclick = async () => {
       if (!r2.ok) throw new Error(ghMsg(r2.status));
       txt = await r2.text();
     }
-    ghOn = true; $("publicar").hidden = false; $("ghst").textContent = "Conectado. Lido " + txt.length + " caracteres de " + GH.repo + " (" + GH.branch + ").";
-    await carregar(txt);
+    $("publicar").hidden = true;
+    if (await carregar(txt)) { ghOn = true; $("publicar").hidden = false; $("ghst").textContent = "Conectado. Lido " + txt.length + " caracteres de " + GH.repo + " (" + GH.branch + ")."; }
   } catch (e) { $("ghst").textContent = e.message || "Não consegui conectar."; }
 };
 $("publicar").onclick = async () => {
@@ -272,9 +289,10 @@ $("addBtn").onclick = async () => {
   keys.forEach((k, i) => F[k] = fin[i]);
   const p = { id, cor: $("cor").value, linha: $("linha").value, tipo: $("tipo").value, nome, desc: desc || nome, preco: pr ? Number(pr) : null, foto: keys[0] };
   if (keys.length > 1) p.mais = keys.slice(1);
+  const nv = Math.floor(Number($("nvar").value)); if (nv >= 2) p.nvar = Math.min(nv, 20);
   if (det) p.detalhes = det;
   P.push(p);
-  ["nome", "desc", "det", "preco", "fotos", "links"].forEach(i => $(i).value = "");
+  ["nome", "desc", "det", "preco", "fotos", "links"].forEach(i => $(i).value = ""); $("nvar").value = "";
   novas = []; $("prev").innerHTML = "";
   desenhar(); marcar(true); toast("Adicionado! Código " + id);
 };
@@ -288,6 +306,7 @@ function remover(id) {
 }
 $("ridBtn").onclick = () => { const v = Number($("rid").value.trim()); if (!v) return alert("Digite o código."); remover(v); $("rid").value = ""; };
 window.rem = remover;
+window.setNvar = (id, v) => { const p = P.find(x => x.id === id), n = Math.floor(Number(v)); if (n >= 2) p.nvar = Math.min(n, 20); else delete p.nvar; desenhar(); marcar(true); toast(p.nvar ? p.nvar + " variações" : "Sem variações"); };
 window.preco = (id, v) => {
   const p = P.find(x => x.id === id); v = v.trim().replace(",", ".");
   if (v && isNaN(Number(v))) return alert("Preço inválido.");
@@ -312,7 +331,7 @@ async function nuvem(d) {
 const testar = u => new Promise(ok => { const i = new Image(); i.onload = () => ok(true); i.onerror = () => ok(false); i.src = u; });
 let BF = [], BL = [];
 const norm = t => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-const titulo = t => t.replace(/\S+/g, (w, i) => i && /^(de|da|do|em|e|com|a|o|para)$/i.test(w) ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1));
+const titulo = t => t.replace(/\S+/g, (w, i) => i && /^(de|da|do|em|e|com|para)$/i.test(w) ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1));
 const achaTipo = w => { w = norm(w); return TIP.find(t => norm(t.nome) === w || t.id === w || norm(t.nome) === w + "s" || norm(t.nome) === w + "es"); };
 function achaLinha(n) {
   return LIN.find(l => norm(l.nome) === n || l.id === n) || LIN.find(l => /folhead/.test(n) && l.id === "folheados") || LIN.find(l => /banhad/.test(n) && l.id === "banhados") || LIN.find(l => /inox/.test(n) && l.id === "inox");
@@ -327,9 +346,11 @@ function descAuto(b) {
 }
 function lerLinha(txt) {
   const tk = txt.split(",").map(x => x.trim()).filter(Boolean);
-  const r = { nome: titulo(tk[0] || ""), cor: "", linha: "", tipo: "", preco: null, desc: "" };
+  const r = { nome: titulo(tk[0] || ""), cor: "", linha: "", tipo: "", preco: null, desc: "", n: 1, nvar: 0 };
   tk.slice(1).forEach(t => {
-    const n = norm(t), pm = n.match(/^(r\$\s*)?(\d+(?:[.,]\d{1,2})?)$/);
+    const n = norm(t), vm = n.match(/^(?:variac(?:ao|oes)\s*(\d+)|(\d+)\s*variac(?:ao|oes)|var\.?\s*(\d+))$/), fm = n.match(/^(?:fotos?\s*(\d+)|(\d+)\s*fotos?)$/), pm = n.match(/^(r\$\s*)?(\d+(?:[.,]\d{1,2})?)$/);
+    if (vm) { const v = Number(vm[1] || vm[2] || vm[3]); r.nvar = v >= 2 ? Math.min(v, 20) : 0; return; }
+    if (fm) { r.n = Math.max(1, Number(fm[1] || fm[2])); return; }
     if (pm) { r.preco = Number(pm[2].replace(",", ".")); return; }
     const c = COR.find(x => norm(x.nome) === n || x.id === n); if (c) { r.cor = c.id; return; }
     const l = achaLinha(n); if (l) { r.linha = l.id; return; }
@@ -355,11 +376,13 @@ function bdel(i) { BF.splice(i, 1); previa(); }
 function previa() {
   galeria();
   BL = $("blista").value.split("\n").map(x => x.trim()).filter(Boolean).map(lerLinha);
-  const erros = BL.reduce((a, b) => a + b.av.length, 0), igual = BL.length === BF.length && BL.length > 0;
-  $("bprev").innerHTML = (BL.length || BF.length ? `<p class="hint">${BF.length} foto(s) e ${BL.length} linha(s)${igual ? "" : ". As quantidades precisam ser iguais."}</p>` : "") + BL.map((b, i) => {
-    const L = LIN.find(l => l.id === b.linha), T = TIP.find(t => t.id === b.tipo), C = COR.find(c => c.id === b.cor);
-    return `<div class="item"><img class="thumb" src="${BF[i] || ""}" alt=""><div><div class="nm">${i + 1}. ${esc(b.nome)}</div>
+  let o = 0; BL.forEach(b => { b.ini = o; o += b.n; });
+  const erros = BL.reduce((a, b) => a + b.av.length, 0), igual = BL.length > 0 && o === BF.length;
+  $("bprev").innerHTML = (BL.length || BF.length ? `<p class="hint">${BF.length} foto(s) enviada(s); as linhas pedem ${o}${igual ? "" : ". As quantidades precisam ser iguais."}</p>` : "") + BL.map((b, i) => {
+    const L = LIN.find(l => l.id === b.linha), T = TIP.find(t => t.id === b.tipo), C = COR.find(c => c.id === b.cor), fs = BF.slice(b.ini, b.ini + b.n);
+    return `<div class="item"><img class="thumb" src="${fs[0] || ""}" alt=""><div><div class="nm">${i + 1}. ${esc(b.nome)}${b.n > 1 ? " (fotos " + (b.ini + 1) + "–" + (b.ini + b.n) + ")" : " (foto " + (b.ini + 1) + ")"}${b.nvar ? ", " + b.nvar + " variações" : ""}</div>
     <div class="meta">${esc(C ? C.nome : "?")} · ${esc(L ? L.nome : "?")} · ${esc(T ? T.nome : "?")} · ${brl(b.preco)}</div>
+    ${b.n > 1 ? `<div class="prev">${fs.map((x, k) => `<img src="${x}" alt="Foto ${k + 1}">`).join("")}</div>` : ""}
     <input aria-label="Descrição" value="${esc(b.desc)}" oninput="BL[${i}].desc=this.value" style="margin-top:6px">
     ${b.av.length ? `<div class="meta" style="color:#ffd27a">⚠ ${esc(b.av.join("; "))}</div>` : ""}</div></div>`;
   }).join("");
@@ -376,18 +399,60 @@ $("bAdd").onclick = async () => {
   $("bAdd").disabled = true; let semNuvem = 0;
   for (let i = 0; i < BL.length; i++) {
     $("bst").textContent = "Adicionando " + (i + 1) + " de " + BL.length + "…";
-    let foto = BF[i];
-    if (cfgOk()) { let ok = false; for (let t = 0; t < 2 && !ok; t++) { try { foto = await nuvem(BF[i]); ok = true; } catch (e) {} } if (!ok) semNuvem++; }
-    const b = BL[i], id = novoId(), k = "f" + id + "_0";
-    F[k] = foto; P.push({ id, cor: b.cor, linha: b.linha, tipo: b.tipo, nome: b.nome, desc: b.desc || descAuto(b), preco: b.preco, foto: k });
+    const b = BL[i], id = novoId(), keys = [];
+    for (let j = 0; j < b.n; j++) {
+      let foto = BF[b.ini + j];
+      if (cfgOk()) { let ok = false; for (let t = 0; t < 2 && !ok; t++) { try { foto = await nuvem(BF[b.ini + j]); ok = true; } catch (e) {} } if (!ok) semNuvem++; }
+      const k = "f" + id + "_" + j; F[k] = foto; keys.push(k);
+    }
+    const p = { id, cor: b.cor, linha: b.linha, tipo: b.tipo, nome: b.nome, desc: b.desc || descAuto(b), preco: b.preco, foto: keys[0] };
+    if (keys.length > 1) p.mais = keys.slice(1);
+    if (b.nvar) p.nvar = b.nvar;
+    P.push(p);
   }
   const n = BL.length; BF = []; BL = []; $("blista").value = ""; $("bfotos").value = "";
   desenhar(); marcar(true); previa();
-  $("bst").textContent = n + " produto(s) adicionados." + (semNuvem ? " " + semNuvem + " foto(s) ficaram dentro do arquivo (falha no Cloudinary). Use “Enviar fotos atuais para a nuvem”." : " Baixe o arquivo para salvar.");
+  $("bst").textContent = n + " produto(s) adicionados." + (semNuvem ? " " + semNuvem + " foto(s) ficaram dentro do arquivo (falha no Cloudinary). Use “Enviar fotos atuais para a nuvem”." : " Baixe ou publique para salvar.");
 };
+const linkTxt = l => !l ? "Sem link" : /^https?:/.test(l) ? "Abre " + l : l.startsWith("linha:") ? "Abre a linha " + ((LIN.find(x => x.id === l.slice(6)) || {}).nome || l.slice(6)) : "Abre o produto " + l.slice(8);
+function desenharCards() {
+  $("lcards").innerHTML = CAR.map((c, i) => `<div class="item"><img class="thumb" src="${F[c.img] || ""}" alt=""><div><div class="nm">Card ${i + 1}${c.titulo ? " · " + esc(c.titulo) : ""}</div><div class="meta">${esc(linkTxt(c.link))}</div><div class="acts" style="flex-wrap:wrap"><button class="sec" onclick="kmov(${i},-1)" aria-label="Mover card ${i + 1} para antes">◀</button><button class="sec" onclick="kmov(${i},1)" aria-label="Mover card ${i + 1} para depois">▶</button><button class="sec" onclick="ktrocar(${i})">Trocar imagem</button><button class="del" onclick="krem(${i})">Remover</button></div></div></div>`).join("") || '<p class="hint">Nenhum card ainda.</p>';
+}
+async function imgCard(file, url) {
+  if (url) {
+    if (!/^https:\/\//i.test(url)) throw new Error("O link da imagem precisa começar com https://");
+    if (!(await testar(url))) throw new Error("Não consegui abrir essa imagem. Use o link direto da foto.");
+    return url;
+  }
+  const d = await reduzir(file); return cfgOk() ? await nuvem(d) : d;
+}
+$("kAdd").onclick = async () => {
+  const f = $("kfile").files[0], url = $("kurl").value.trim(), t = $("kalvo").value, val = $("kvalor").value.trim();
+  if (!f && !url) return alert("Escolha uma imagem ou cole o link dela.");
+  let link = "";
+  if (t.startsWith("linha:")) link = t;
+  else if (t === "produto") { const n = Number(val); if (!P.some(p => p.id === n)) return alert("Não existe produto com esse código."); link = "produto:" + n; }
+  else if (t === "url") { if (!/^https:\/\//i.test(val)) return alert("O link do card precisa começar com https://"); link = val; }
+  $("kAdd").disabled = true; $("kst").textContent = "Enviando imagem…";
+  try {
+    const img = await imgCard(f, url); let id; do { id = 10000 + Math.floor(Math.random() * 90000); } while (CAR.some(c => c.id === id));
+    F["k" + id] = img; CAR.push({ id, img: "k" + id, titulo: $("ktitulo").value.trim(), link });
+    ["kfile", "kurl", "ktitulo", "kvalor"].forEach(i => $(i).value = ""); $("kalvo").value = "";
+    desenhar(); marcar(true); $("kst").textContent = "Card adicionado.";
+  } catch (e) { $("kst").textContent = ""; alert(e.message || "Não consegui enviar a imagem."); }
+  $("kAdd").disabled = false;
+};
+let kTroca = -1;
+window.ktrocar = i => { kTroca = i; $("ktroca").click(); };
+$("ktroca").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f || kTroca < 0) return;
+  try { const img = await imgCard(f, ""), c = CAR[kTroca], nk = "k" + c.id + "_" + Date.now().toString(36); delete F[c.img]; F[nk] = img; c.img = nk; desenhar(); marcar(true); toast("Imagem trocada"); } catch (err) { alert(err.message); }
+};
+window.kmov = (i, d) => { const j = i + d; if (j < 0 || j >= CAR.length) return; [CAR[i], CAR[j]] = [CAR[j], CAR[i]]; desenhar(); marcar(true); };
+window.krem = i => { if (!confirm("Remover este card?")) return; delete F[CAR[i].img]; CAR.splice(i, 1); desenhar(); marcar(true); };
 $("migrar").onclick = async () => {
   if (!cfgOk()) return alert("Salve o Cloud name e o preset primeiro.");
-  const ks = [...new Set(P.flatMap(p => [p.foto].concat(p.mais || [])))].filter(k => /^data:/.test(F[k] || ""));
+  const ks = [...new Set(P.flatMap(p => [p.foto].concat(p.mais || [])).concat(CAR.map(c => c.img)))].filter(k => /^data:/.test(F[k] || ""));
   if (!ks.length) return alert("Todas as fotos dos produtos já estão fora do arquivo.");
   if (!confirm("Enviar " + ks.length + " foto(s) para o Cloudinary?")) return;
   let n = 0, falhas = [], motivo = "";
@@ -406,6 +471,7 @@ window.setCor = (id, v) => { P.find(x => x.id === id).cor = v; desenhar(); marca
 function semCor() { const n = P.filter(p => !p.cor).length; if (n) alert(n + " produto(s) estão sem cor. Escolha Dourado ou Prata na lista de produtos antes de baixar."); return n; }
 function desenhar() {
   desenharCats();
+  desenharCards();
   $("cnt").textContent = P.length;
   const q = $("busca").value.trim().toLowerCase();
   const l = P.filter(p => !q || String(p.id).includes(q) || p.nome.toLowerCase().includes(q));
@@ -413,15 +479,16 @@ function desenhar() {
     const L = LIN.find(x => x.id === p.linha), T = TIP.find(x => x.id === p.tipo);
     return `<div class="item"><img class="thumb" src="${F[p.foto] || ""}" alt="">
     <div><div class="cod">Cód. ${p.id}</div><div class="nm">${esc(p.nome)}</div>
-    <div class="meta">${esc(L ? L.nome : "")} · ${esc(T ? T.nome : "")} · ${brl(p.preco)}</div>
+    <div class="meta">${esc(L ? L.nome : "")} · ${esc(T ? T.nome : "")} · ${brl(p.preco)}${p.nvar ? " · " + p.nvar + " variações" : ""}</div>
     <div class="acts"><select aria-label="Cor" onchange="setCor(${p.id},this.value)" style="width:auto;padding:7px"><option value="">⚠ sem cor</option>${COR.map(c => `<option value="${c.id}"${p.cor === c.id ? " selected" : ""}>${esc(c.nome)}</option>`).join("")}</select></div>
-    <div class="acts"><input aria-label="Preço" inputmode="decimal" value="${p.preco == null ? "" : p.preco}" placeholder="Consulte" onchange="preco(${p.id},this.value)"><button class="del" onclick="rem(${p.id})">Remover</button></div></div></div>`;
+    <div class="acts"><input aria-label="Preço" inputmode="decimal" value="${p.preco == null ? "" : p.preco}" placeholder="Consulte" onchange="preco(${p.id},this.value)"><input aria-label="Variações" inputmode="numeric" value="${p.nvar || ""}" placeholder="var." style="width:70px" onchange="setNvar(${p.id},this.value)"><button class="del" onclick="rem(${p.id})">Remover</button></div></div></div>`;
   }).join("") : `<p class="hint">${P.length ? "Nada encontrado para essa busca." : "Nenhum produto no site. Adicione o primeiro acima."}</p>`;
 }
 function atualizarSelects() {
   const v = $("linha").value;
   $("linha").innerHTML = LIN.map(l => `<option value="${l.id}">${esc(l.nome)}</option>`).join("");
   if (LIN.some(l => l.id === v)) $("linha").value = v;
+  $("kalvo").innerHTML = '<option value="">Sem link</option>' + LIN.map(l => `<option value="linha:${l.id}">Abrir a linha ${esc(l.nome)}</option>`).join("") + '<option value="produto">Abrir um produto (digite o código)</option><option value="url">Abrir um link (digite abaixo)</option>';
   tiposDaLinha();
   $("cl").innerHTML = LIN.map(l => `<label class="ck"><input type="checkbox" value="${l.id}"> ${esc(l.nome)}</label>`).join("");
 }
@@ -470,7 +537,7 @@ window.remSub = id => {
 };
 function gerar() {
   const arr = a => "[\n" + a.map(x => "  " + JSON.stringify(x)).join(",\n") + "\n]";
-  const val = { L: arr(LIN), T: arr(TIP), P: arr(P), S: arr(SOB), C: arr([CB]), F: "{ " + Object.entries(F).map(([k, v]) => JSON.stringify(k) + ": " + JSON.stringify(v)).join(", ") + " }" };
+  const val = { L: arr(LIN), T: arr(TIP), P: arr(P), S: arr(SOB), C: arr([CB]), K: arr(CAR), F: "{ " + Object.entries(F).map(([k, v]) => JSON.stringify(k) + ": " + JSON.stringify(v)).join(", ") + " }" };
   let out = "", pos = 0;
   rg.slice().sort((a, b) => a[1][0] - b[1][0]).forEach(([k, r]) => { out += src.slice(pos, r[0]) + val[k].replace(/<\//g, "<\\/"); pos = r[1]; });
   return out + src.slice(pos);
