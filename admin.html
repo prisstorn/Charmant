@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Charmant · Painel</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Cormorant+Garamond:wght@500;600;700&display=swap">
+<style>
+:root{--bg:#24040a;--wine:#3a0610;--gold:#d9ad5f;--gold2:#f5dc9c;--paper:#f4e4c4;--ink:#4a0d14;--mut:#8a5a48;--ok:#7fb069}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--gold2);font:600 1.05rem/1.35 "Cormorant Garamond",Georgia,serif;padding:20px 14px 110px}
+main{max-width:720px;margin:0 auto}
+h1{font:700 1.7rem "Playfair Display",Georgia,serif;margin:0;color:var(--paper)}
+h2{font:700 1.15rem "Playfair Display",Georgia,serif;margin:0 0 12px;color:var(--gold)}
+.sub{margin:4px 0 18px;color:var(--gold2);opacity:.8}
+section{background:var(--wine);border:1px solid rgba(217,173,95,.45);border-radius:8px;padding:16px;margin-bottom:16px}
+label{display:block;margin:10px 0 4px;font-size:.95rem;color:var(--paper)}
+input,select,textarea{width:100%;font:inherit;font-weight:600;padding:10px;border-radius:4px;border:1px solid var(--gold);background:var(--paper);color:var(--ink)}
+textarea{min-height:64px;resize:vertical}
+button{font:700 .85rem "Playfair Display",Georgia,serif;cursor:pointer;border:1px solid var(--gold);border-radius:4px;padding:11px 14px;background:linear-gradient(#f5dc9c,#d9ad5f);color:var(--ink)}
+button.sec{background:transparent;color:var(--gold2)}
+button.del{background:transparent;color:#ff9b9b;border-color:#ff9b9b;padding:8px 10px}
+button:active{transform:translateY(1px)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--gold2);outline-offset:2px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.prev{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.prev img,.thumb{width:64px;height:64px;object-fit:cover;border:2px solid var(--gold);border-radius:4px;background:#000}
+.item{display:grid;grid-template-columns:64px 1fr;gap:12px;padding:12px 0;border-top:1px solid rgba(217,173,95,.3)}
+.item:first-of-type{border-top:0}
+.cod{font:700 .8rem "Playfair Display",Georgia,serif;color:var(--gold);letter-spacing:.06em}
+.nm{color:var(--paper);font-weight:700}
+.meta{font-size:.9rem;opacity:.8}
+.acts{display:flex;gap:8px;align-items:center;margin-top:6px}
+.acts input{width:110px;padding:7px}
+.inline{display:flex;gap:8px}.inline input{flex:1}
+.hint{font-size:.92rem;opacity:.8;margin:8px 0 0}
+.ck{display:flex;gap:8px;align-items:center;margin:6px 0}.ck input{width:auto}
+.crow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid rgba(217,173,95,.3)}
+.crow:first-child{border-top:0}
+#bar{position:fixed;left:0;right:0;bottom:0;padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));background:#1a0307;border-top:1.5px solid var(--gold);display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
+#st{width:100%;text-align:center;font-size:.9rem}
+#st.dirty{color:#ffd27a}#st.ok{color:var(--ok)}
+#toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);background:var(--paper);color:var(--ink);padding:10px 16px;border-radius:4px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}
+#toast.on{opacity:1}
+[hidden]{display:none!important}
+.bgal{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.bg{position:relative;width:92px}
+.bg img{width:92px;height:150px;object-fit:cover;border:2px solid var(--gold);border-radius:4px;display:block;background:#000}
+.bn{position:absolute;top:5px;left:5px;min-width:26px;height:26px;padding:0 4px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:var(--gold2);color:var(--ink);font:700 .9rem "Playfair Display",Georgia,serif}
+.bm{display:flex;gap:4px;margin-top:4px}
+.bm button{flex:1;padding:7px 0;font-size:.8rem}
+</style>
+</head>
+<body>
+<main>
+<h1>Charmant · Painel</h1>
+<p class="sub">Adicione ou remova produtos e baixe o site pronto para o Netlify.</p>
+
+<section id="s1">
+<h2>1. Conectar ao site</h2>
+<div class="row2"><div><label for="ghrepo">Repositório (usuario/nome)</label><input id="ghrepo" autocapitalize="off" placeholder="maria/charmant"></div>
+<div><label for="ghbranch">Branch</label><input id="ghbranch" value="main" autocapitalize="off"></div></div>
+<label for="ghtoken">Token do GitHub</label><input id="ghtoken" type="password" autocomplete="off">
+<div style="margin-top:12px"><button id="ghLoad">Carregar site</button></div>
+<p class="hint" id="ghst">Os dados ficam salvos só neste aparelho.</p>
+<label for="arq" style="margin-top:16px">Ou abra um arquivo do computador</label>
+<input type="file" id="arq" accept=".html,text/html">
+</section>
+
+<div id="painel" hidden>
+<section>
+<h2>2. Categorias e subcategorias</h2>
+<div id="lcat"></div>
+<label for="cnome">Nova categoria</label>
+<div class="inline"><input id="cnome" placeholder="Ex.: Acessórios"><button id="catBtn">Criar</button></div>
+<label for="ctexto">Texto dela na página “Sobre as peças” (opcional)</label><textarea id="ctexto"></textarea>
+<h2 style="margin-top:22px">Subcategorias</h2>
+<div id="lsub"></div>
+<label for="snome">Nova subcategoria</label><input id="snome" placeholder="Ex.: Tornozeleiras">
+<label>Vale para quais categorias? (nenhuma marcada = todas)</label><div id="cl"></div>
+<div style="margin-top:12px"><button id="subBtn">Criar subcategoria</button></div>
+<p class="hint">As categorias e subcategorias aparecem no menu do site.</p>
+</section>
+
+<section>
+<h2>3. Cuidados básicos (aparecem em todas as peças)</h2>
+<textarea id="cb" style="min-height:120px"></textarea>
+<p class="hint">Escreva uma vez e vale para todos os produtos. Deixe vazio para não mostrar.</p>
+</section>
+
+<section>
+<h2>Fotos na nuvem (Cloudinary)</h2>
+<div class="row2"><div><label for="ccloud">Cloud name</label><input id="ccloud" autocapitalize="off"></div>
+<div><label for="cpreset">Upload preset (unsigned)</label><input id="cpreset" autocapitalize="off"></div></div>
+<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button id="csalvar">Salvar</button><button class="sec" id="migrar">Enviar fotos atuais para a nuvem</button></div>
+<p class="hint" id="cst">Sem isso, as fotos novas continuam dentro do arquivo do site.</p>
+<p class="hint">Cloudinary: crie a conta grátis, copie o Cloud name no painel e, em Settings › Upload › Upload presets, crie um preset com Signing mode “Unsigned”. Funciona só com este painel aberto como arquivo, não pelo link online.</p>
+</section>
+
+<section>
+<h2>Adicionar vários de uma vez</h2>
+<label for="bfotos">1. Fotos, na ordem dos produtos</label><input type="file" id="bfotos" accept="image/*" multiple>
+<div class="bgal" id="bgal"></div>
+<label for="blista">2. Uma linha por produto: a linha 1 vale para a foto 1, a 2 para a foto 2…</label>
+<textarea id="blista" style="min-height:150px" placeholder="Brinco Estrela Folheada, Prata, Folheados, R$12&#10;Brinco Flor Zircônia, Dourado, Banhados, R$24"></textarea>
+<p class="hint">Em cada linha: nome primeiro e, depois, cor, linha e preço separados por vírgula, em qualquer ordem. O tipo (Brincos, Colares…) é descoberto pelo nome. Se não der (ex.: Argola), escreva o tipo na linha. A descrição é criada sozinha e você pode editar abaixo.</p>
+<div id="bprev"></div>
+<div style="margin-top:12px"><button id="bAdd" disabled>Adicionar todos</button></div>
+<p class="hint" id="bst"></p>
+</section>
+
+<section>
+<h2>4. Adicionar produto</h2>
+<label for="cor">Cor (obrigatória)</label><select id="cor"></select>
+<label for="nome">Nome</label><input id="nome" placeholder="Ex.: Brinco Folheado Ouro 18k">
+<label for="desc">Descrição curta (aparece no card)</label><input id="desc" placeholder="Ex.: Semijoia com zircônias, modelo flor">
+<label for="det">Detalhes (aparece ao abrir a peça, opcional)</label><textarea id="det"></textarea>
+<div class="row2">
+<div><label for="preco">Preço em R$ (vazio = “Consulte”)</label><input id="preco" inputmode="decimal" placeholder="25"></div>
+<div><label for="linha">Linha</label><select id="linha"></select></div>
+</div>
+<label for="tipo">Tipo de peça</label><select id="tipo"></select>
+<label for="fotos">Fotos (a primeira é a principal)</label><input type="file" id="fotos" accept="image/*" multiple>
+<div class="prev" id="prev"></div>
+<label for="links">Ou cole links de imagens (um por linha)</label><textarea id="links" placeholder="https://..."></textarea>
+<p class="hint">O código do produto (5 números) é criado sozinho ao adicionar.</p>
+<div style="margin-top:14px"><button id="addBtn">Adicionar produto</button></div>
+</section>
+
+<section>
+<h2>5. Produtos no site (<span id="cnt">0</span>)</h2>
+<label for="busca">Buscar por código ou nome</label><input id="busca" placeholder="Ex.: 66789">
+<div id="lista" style="margin-top:8px"></div>
+<label for="rid" style="margin-top:16px">Remover pelo código</label>
+<div class="inline"><input id="rid" inputmode="numeric" placeholder="Código do produto"><button class="del" id="ridBtn">Remover</button></div>
+</section>
+</div>
+</main>
+
+<div id="bar" hidden>
+<div id="st">Nenhuma alteração ainda</div>
+<button id="publicar" hidden>Publicar no site</button>
+<button class="sec" id="baixar">Baixar Charmant.html</button>
+<button class="sec" id="copiar">Copiar código</button>
+</div>
+<div id="toast"></div>
+
+<script>
+let src = "", rg = null, P = [], F = {}, LIN = [], TIP = [], SOB = [], COR = [], CB = "", dirty = false, novas = [];
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const brl = n => n == null ? "Consulte" : n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+let tt;
+function toast(m) { const e = $("toast"); e.textContent = m; e.classList.add("on"); clearTimeout(tt); tt = setTimeout(() => e.classList.remove("on"), 2200); }
+function lit(name, tail, off) {
+  const k = "const " + name + " = ", a = src.indexOf(k);
+  if (a < 0) throw new Error("Não achei " + name);
+  const s = a + k.length, e = src.indexOf(tail, s) + off;
+  return [s, e, src.slice(s, e)];
+}
+const ler = t => new Function("return " + t)();
+function marcar(d) {
+  dirty = d;
+  const st = $("st");
+  st.textContent = d ? "Há alterações. Baixe o arquivo para salvar." : "Arquivo baixado ✓";
+  st.className = d ? "dirty" : "ok";
+}
+$("arq").onchange = async e => { const f = e.target.files[0]; if (!f) return; ghOn = false; $("publicar").hidden = true; await carregar(await f.text()); };
+async function carregar(texto) {
+  try {
+    src = texto;
+    const p = lit("PRODUTOS", "\n];", 2), fo = lit("FOTOS", "};", 1);
+    const li = lit("LINHAS", "\n];", 2), ti = lit("TIPOS", "\n];", 2), so = lit("SOBRE", "\n];", 2), co = lit("CORES", "\n];", 2), cb = lit("CUIDADOS_BASE", "\n];", 2);
+    rg = [["L", li], ["T", ti], ["P", p], ["S", so], ["F", fo], ["C", cb]];
+    P = ler(p[2]); F = ler(fo[2]); LIN = ler(li[2]); TIP = ler(ti[2]); SOB = ler(so[2]); COR = ler(co[2]); CB = ler(cb[2])[0] || "";
+    $("cb").value = CB; $("cor").innerHTML = '<option value="">Escolha…</option>' + COR.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join("");
+    $("painel").hidden = false; $("bar").hidden = false;
+    atualizarSelects(); desenhar(); marcar(false);
+    $("st").textContent = "Nenhuma alteração ainda"; $("st").className = "";
+    toast("Site carregado com " + P.length + " produtos");
+  } catch (err) { alert("Use o Charmant.html mais recente, com Dourado/Prata e Cuidados básicos.\n(" + err.message + ")"); }
+}
+let ghOn = false, shaAtual = "", GH = { repo: "", branch: "main", token: "" };
+try { GH = Object.assign(GH, JSON.parse(localStorage.getItem("charmantGH"))); } catch (e) {}
+$("ghrepo").value = GH.repo; $("ghbranch").value = GH.branch || "main"; $("ghtoken").value = GH.token;
+const ghUrl = () => "https://api.github.com/repos/" + GH.repo + "/contents/index.html";
+const ghHead = a => ({ Authorization: "Bearer " + GH.token, Accept: a || "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" });
+const ghMsg = st => ({ 401: "Token inválido ou vencido.", 403: "O token não tem permissão neste repositório.", 404: "Não achei o repositório, a branch ou o index.html. Confira os dados.", 409: "O site mudou desde que você o carregou. Carregue de novo.", 422: "O site mudou desde que você o carregou. Carregue de novo." }[st] || "Erro " + st + " do GitHub.");
+$("ghLoad").onclick = async () => {
+  GH = { repo: $("ghrepo").value.trim(), branch: $("ghbranch").value.trim() || "main", token: $("ghtoken").value.trim() };
+  if (!/^[\w.-]+\/[\w.-]+$/.test(GH.repo) || !GH.token) return alert("Preencha o repositório (usuario/nome) e o token.");
+  try { localStorage.setItem("charmantGH", JSON.stringify(GH)); } catch (e) {}
+  $("ghst").textContent = "Carregando…";
+  try {
+    const q = "?ref=" + encodeURIComponent(GH.branch);
+    const r = await fetch(ghUrl() + q, { headers: ghHead() });
+    if (!r.ok) throw new Error(ghMsg(r.status));
+    shaAtual = (await r.json()).sha;
+    const r2 = await fetch(ghUrl() + q, { headers: ghHead("application/vnd.github.raw+json") });
+    if (!r2.ok) throw new Error(ghMsg(r2.status));
+    ghOn = true; $("publicar").hidden = false; $("ghst").textContent = "Conectado.";
+    await carregar(await r2.text());
+  } catch (e) { $("ghst").textContent = e.message || "Não consegui conectar."; }
+};
+$("publicar").onclick = async () => {
+  if (semCor()) return;
+  const b = new TextEncoder().encode(gerar()); let bin = "";
+  for (let i = 0; i < b.length; i += 0x8000) bin += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000));
+  $("publicar").disabled = true; $("st").textContent = "Publicando…";
+  try {
+    const r = await fetch(ghUrl(), { method: "PUT", headers: ghHead(), body: JSON.stringify({ message: "Atualização pelo painel", content: btoa(bin), sha: shaAtual, branch: GH.branch }) });
+    if (!r.ok) throw new Error(ghMsg(r.status));
+    shaAtual = (await r.json()).content.sha; marcar(false);
+    $("st").textContent = "Publicado ✓ O Cloudflare atualiza o site em cerca de 1 minuto."; $("st").className = "ok";
+  } catch (e) { $("st").textContent = "Não publicou: " + e.message; $("st").className = "dirty"; }
+  $("publicar").disabled = false;
+};
+function tiposDaLinha() {
+  const l = $("linha").value, atual = $("tipo").value;
+  $("tipo").innerHTML = TIP.filter(t => !t.apenas || t.apenas.includes(l)).map(t => `<option value="${t.id}">${esc(t.nome)}</option>`).join("");
+  if ([...$("tipo").options].some(o => o.value === atual)) $("tipo").value = atual;
+}
+$("linha").onchange = tiposDaLinha;
+function reduzir(file) {
+  return new Promise((ok, no) => {
+    const u = URL.createObjectURL(file), im = new Image();
+    im.onload = () => {
+      const m = 900, k = Math.min(1, m / Math.max(im.width, im.height)), c = document.createElement("canvas");
+      c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+      c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(u); ok(c.toDataURL("image/jpeg", .82));
+    };
+    im.onerror = () => no(new Error("Não consegui ler a foto " + file.name));
+    im.src = u;
+  });
+}
+$("fotos").onchange = async e => {
+  novas = [];
+  try { for (const f of e.target.files) novas.push(await reduzir(f)); } catch (err) { alert(err.message); novas = []; }
+  $("prev").innerHTML = novas.map(s => `<img src="${s}" alt="">`).join("");
+};
+function novoId() { let n; do { n = 10000 + Math.floor(Math.random() * 90000); } while (P.some(p => p.id === n)); return n; }
+$("addBtn").onclick = async () => {
+  const nome = $("nome").value.trim(), desc = $("desc").value.trim(), det = $("det").value.trim();
+  const pr = $("preco").value.trim().replace(",", ".");
+  if (!nome) return alert("Escreva o nome do produto.");
+  if (!$("cor").value) return alert("Escolha a cor: Dourado ou Prata.");
+  if (!$("linha").value || !$("tipo").value) return alert("Escolha uma categoria e uma subcategoria.");
+  const links = $("links").value.split(/\s+/).filter(Boolean);
+  if (links.some(l => !/^https:\/\//i.test(l))) return alert("Os links precisam começar com https://");
+  if (!novas.length && !links.length) return alert("Escolha uma foto ou cole um link de imagem.");
+  if (pr && isNaN(Number(pr))) return alert("Preço inválido. Use só números, como 25 ou 25,50.");
+  $("addBtn").disabled = true; toast("Processando fotos…");
+  let fin = [];
+  try {
+    for (const u of links) if (!(await testar(u))) throw new Error("Não consegui abrir esta imagem:\n" + u + "\nUse o link direto da foto (termina em .jpg, .png ou .webp) ou envie o arquivo.");
+    for (const d of novas) fin.push(cfgOk() ? await nuvem(d) : d);
+    fin = fin.concat(links);
+  } catch (err) { $("addBtn").disabled = false; return alert(err.message); }
+  $("addBtn").disabled = false;
+  const id = novoId(), keys = fin.map((_, i) => "f" + id + "_" + i);
+  keys.forEach((k, i) => F[k] = fin[i]);
+  const p = { id, cor: $("cor").value, linha: $("linha").value, tipo: $("tipo").value, nome, desc: desc || nome, preco: pr ? Number(pr) : null, foto: keys[0] };
+  if (keys.length > 1) p.mais = keys.slice(1);
+  if (det) p.detalhes = det;
+  P.push(p);
+  ["nome", "desc", "det", "preco", "fotos", "links"].forEach(i => $(i).value = "");
+  novas = []; $("prev").innerHTML = "";
+  desenhar(); marcar(true); toast("Adicionado! Código " + id);
+};
+function remover(id) {
+  const p = P.find(x => x.id === id);
+  if (!p) return alert("Não existe produto com o código " + id + ".");
+  if (!confirm("Remover “" + p.nome + "” (código " + id + ")?")) return;
+  [p.foto].concat(p.mais || []).forEach(k => delete F[k]);
+  P = P.filter(x => x.id !== id);
+  desenhar(); marcar(true); toast("Removido: " + p.nome);
+}
+$("ridBtn").onclick = () => { const v = Number($("rid").value.trim()); if (!v) return alert("Digite o código."); remover(v); $("rid").value = ""; };
+window.rem = remover;
+window.preco = (id, v) => {
+  const p = P.find(x => x.id === id); v = v.trim().replace(",", ".");
+  if (v && isNaN(Number(v))) return alert("Preço inválido.");
+  p.preco = v ? Number(v) : null; marcar(true); toast("Preço atualizado");
+};
+let CFG = { cloud: "", preset: "" };
+try { CFG = JSON.parse(localStorage.getItem("charmantCloud")) || CFG; } catch (e) {}
+$("ccloud").value = CFG.cloud; $("cpreset").value = CFG.preset;
+const cfgOk = () => !!(CFG.cloud && CFG.preset);
+$("csalvar").onclick = () => {
+  CFG = { cloud: $("ccloud").value.trim(), preset: $("cpreset").value.trim() };
+  try { localStorage.setItem("charmantCloud", JSON.stringify(CFG)); } catch (e) {}
+  $("cst").textContent = cfgOk() ? "Salvo. As fotos novas vão para o Cloudinary." : "Preencha os dois campos.";
+};
+async function nuvem(d) {
+  const f = new FormData(); f.append("file", d); f.append("upload_preset", CFG.preset);
+  const r = await fetch("https://api.cloudinary.com/v1_1/" + encodeURIComponent(CFG.cloud) + "/image/upload", { method: "POST", body: f });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || !j.secure_url) throw new Error((j.error && j.error.message) || "falha no envio ao Cloudinary");
+  return j.secure_url.replace("/upload/", "/upload/f_auto,q_auto,w_900/");
+}
+const testar = u => new Promise(ok => { const i = new Image(); i.onload = () => ok(true); i.onerror = () => ok(false); i.src = u; });
+let BF = [], BL = [];
+const norm = t => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+const titulo = t => t.replace(/\S+/g, (w, i) => i && /^(de|da|do|em|e|com|a|o|para)$/i.test(w) ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1));
+const achaTipo = w => { w = norm(w); return TIP.find(t => norm(t.nome) === w || t.id === w || norm(t.nome) === w + "s" || norm(t.nome) === w + "es"); };
+function achaLinha(n) {
+  return LIN.find(l => norm(l.nome) === n || l.id === n) || LIN.find(l => /folhead/.test(n) && l.id === "folheados") || LIN.find(l => /banhad/.test(n) && l.id === "banhados") || LIN.find(l => /inox/.test(n) && l.id === "inox");
+}
+function descAuto(b) {
+  const L = LIN.find(l => l.id === b.linha), n = norm(b.nome);
+  const base = { folheados: "Semijoia folheada", banhados: "Semijoia banhada", prata925: "Banhada em prata 925", inox: "Aço inoxidável", relogios: "Relógio" }[b.linha] || (L ? L.nome : "Semijoia");
+  const com = /zirc|strass/.test(n) ? " com zircônias" : /cravej/.test(n) ? " cravejada" : /perola/.test(n) ? " com pérola" : "";
+  const ign = /^(semijoia|folheada|folheado|banhada|banhado|prata|dourado|dourada|ouro|18k|zirconia|zirconias|cravejada|cravejado)$/;
+  const modelo = b.nome.split(/\s+/).slice(1).filter(w => !ign.test(norm(w))).join(" ").toLowerCase();
+  return base + com + (modelo ? ", modelo " + modelo : "");
+}
+function lerLinha(txt) {
+  const tk = txt.split(",").map(x => x.trim()).filter(Boolean);
+  const r = { nome: titulo(tk[0] || ""), cor: "", linha: "", tipo: "", preco: null, desc: "" };
+  tk.slice(1).forEach(t => {
+    const n = norm(t), pm = n.match(/^(r\$\s*)?(\d+(?:[.,]\d{1,2})?)$/);
+    if (pm) { r.preco = Number(pm[2].replace(",", ".")); return; }
+    const c = COR.find(x => norm(x.nome) === n || x.id === n); if (c) { r.cor = c.id; return; }
+    const l = achaLinha(n); if (l) { r.linha = l.id; return; }
+    const ti = achaTipo(t); if (ti) { r.tipo = ti.id; return; }
+    r.desc = t;
+  });
+  if (!r.tipo && r.nome) { const ti = achaTipo(r.nome.split(/\s+/)[0]); if (ti) r.tipo = ti.id; }
+  const T = TIP.find(x => x.id === r.tipo);
+  r.av = [];
+  if (!r.nome) r.av.push("sem nome");
+  if (!r.cor) r.av.push("falta a cor");
+  if (!r.linha) r.av.push("falta a linha");
+  if (!r.tipo) r.av.push("falta o tipo (escreva, ex.: Brincos)");
+  else if (T && T.apenas && r.linha && !T.apenas.includes(r.linha)) r.av.push("esse tipo não existe nessa linha");
+  if (!r.desc) r.desc = descAuto(r);
+  return r;
+}
+function galeria() {
+  $("bgal").innerHTML = BF.map((s, i) => `<div class="bg"><span class="bn">${i + 1}</span><img src="${s}" alt="Foto ${i + 1}"><div class="bm"><button class="sec" onclick="bmov(${i},-1)" aria-label="Mover foto ${i + 1} para trás">◀</button><button class="del" onclick="bdel(${i})" aria-label="Remover foto ${i + 1}">✕</button><button class="sec" onclick="bmov(${i},1)" aria-label="Mover foto ${i + 1} para frente">▶</button></div></div>`).join("") + (BF.length ? `<div style="align-self:center"><button class="sec" onclick="BF=[];previa()">Limpar fotos</button></div>` : "");
+}
+function bmov(i, d) { const j = i + d; if (j < 0 || j >= BF.length) return; [BF[i], BF[j]] = [BF[j], BF[i]]; previa(); }
+function bdel(i) { BF.splice(i, 1); previa(); }
+function previa() {
+  galeria();
+  BL = $("blista").value.split("\n").map(x => x.trim()).filter(Boolean).map(lerLinha);
+  const erros = BL.reduce((a, b) => a + b.av.length, 0), igual = BL.length === BF.length && BL.length > 0;
+  $("bprev").innerHTML = (BL.length || BF.length ? `<p class="hint">${BF.length} foto(s) e ${BL.length} linha(s)${igual ? "" : ". As quantidades precisam ser iguais."}</p>` : "") + BL.map((b, i) => {
+    const L = LIN.find(l => l.id === b.linha), T = TIP.find(t => t.id === b.tipo), C = COR.find(c => c.id === b.cor);
+    return `<div class="item"><img class="thumb" src="${BF[i] || ""}" alt=""><div><div class="nm">${i + 1}. ${esc(b.nome)}</div>
+    <div class="meta">${esc(C ? C.nome : "?")} · ${esc(L ? L.nome : "?")} · ${esc(T ? T.nome : "?")} · ${brl(b.preco)}</div>
+    <input aria-label="Descrição" value="${esc(b.desc)}" oninput="BL[${i}].desc=this.value" style="margin-top:6px">
+    ${b.av.length ? `<div class="meta" style="color:#ffd27a">⚠ ${esc(b.av.join("; "))}</div>` : ""}</div></div>`;
+  }).join("");
+  $("bAdd").disabled = !(igual && !erros);
+}
+$("blista").oninput = previa;
+$("bfotos").onchange = async e => {
+  const fs = [...e.target.files]; e.target.value = ""; $("bst").textContent = "Preparando fotos…";
+  try { for (const f of fs) { BF.push(await reduzir(f)); previa(); } $("bst").textContent = ""; } catch (err) { $("bst").textContent = err.message; }
+  previa();
+};
+$("bAdd").onclick = async () => {
+  if ($("bAdd").disabled) return;
+  $("bAdd").disabled = true; let semNuvem = 0;
+  for (let i = 0; i < BL.length; i++) {
+    $("bst").textContent = "Adicionando " + (i + 1) + " de " + BL.length + "…";
+    let foto = BF[i];
+    if (cfgOk()) { let ok = false; for (let t = 0; t < 2 && !ok; t++) { try { foto = await nuvem(BF[i]); ok = true; } catch (e) {} } if (!ok) semNuvem++; }
+    const b = BL[i], id = novoId(), k = "f" + id + "_0";
+    F[k] = foto; P.push({ id, cor: b.cor, linha: b.linha, tipo: b.tipo, nome: b.nome, desc: b.desc || descAuto(b), preco: b.preco, foto: k });
+  }
+  const n = BL.length; BF = []; BL = []; $("blista").value = ""; $("bfotos").value = "";
+  desenhar(); marcar(true); previa();
+  $("bst").textContent = n + " produto(s) adicionados." + (semNuvem ? " " + semNuvem + " foto(s) ficaram dentro do arquivo (falha no Cloudinary). Use “Enviar fotos atuais para a nuvem”." : " Baixe o arquivo para salvar.");
+};
+$("migrar").onclick = async () => {
+  if (!cfgOk()) return alert("Salve o Cloud name e o preset primeiro.");
+  const ks = [...new Set(P.flatMap(p => [p.foto].concat(p.mais || [])))].filter(k => /^data:/.test(F[k] || ""));
+  if (!ks.length) return alert("Todas as fotos dos produtos já estão fora do arquivo.");
+  if (!confirm("Enviar " + ks.length + " foto(s) para o Cloudinary?")) return;
+  let n = 0, falhas = [], motivo = "";
+  for (const k of ks) {
+    $("cst").textContent = "Enviando " + (++n) + " de " + ks.length + "…";
+    let ok = false;
+    for (let t = 0; t < 2 && !ok; t++) { try { F[k] = await nuvem(F[k]); ok = true; } catch (e) { motivo = e.message; } }
+    if (!ok) falhas.push(k);
+  }
+  $("cst").textContent = falhas.length ? (ks.length - falhas.length) + " enviadas, " + falhas.length + " falharam (" + motivo + "). Toque de novo no botão para tentar as que faltam." : "Pronto! " + ks.length + " foto(s) na nuvem. Baixe o arquivo.";
+  marcar(true); desenhar();
+};
+$("busca").oninput = desenhar;
+$("cb").oninput = e => { CB = e.target.value.trim(); marcar(true); };
+window.setCor = (id, v) => { P.find(x => x.id === id).cor = v; desenhar(); marcar(true); };
+function semCor() { const n = P.filter(p => !p.cor).length; if (n) alert(n + " produto(s) estão sem cor. Escolha Dourado ou Prata na lista de produtos antes de baixar."); return n; }
+function desenhar() {
+  desenharCats();
+  $("cnt").textContent = P.length;
+  const q = $("busca").value.trim().toLowerCase();
+  const l = P.filter(p => !q || String(p.id).includes(q) || p.nome.toLowerCase().includes(q));
+  $("lista").innerHTML = l.length ? l.map(p => {
+    const L = LIN.find(x => x.id === p.linha), T = TIP.find(x => x.id === p.tipo);
+    return `<div class="item"><img class="thumb" src="${F[p.foto] || ""}" alt="">
+    <div><div class="cod">Cód. ${p.id}</div><div class="nm">${esc(p.nome)}</div>
+    <div class="meta">${esc(L ? L.nome : "")} · ${esc(T ? T.nome : "")} · ${brl(p.preco)}</div>
+    <div class="acts"><select aria-label="Cor" onchange="setCor(${p.id},this.value)" style="width:auto;padding:7px"><option value="">⚠ sem cor</option>${COR.map(c => `<option value="${c.id}"${p.cor === c.id ? " selected" : ""}>${esc(c.nome)}</option>`).join("")}</select></div>
+    <div class="acts"><input aria-label="Preço" inputmode="decimal" value="${p.preco == null ? "" : p.preco}" placeholder="Consulte" onchange="preco(${p.id},this.value)"><button class="del" onclick="rem(${p.id})">Remover</button></div></div></div>`;
+  }).join("") : `<p class="hint">${P.length ? "Nada encontrado para essa busca." : "Nenhum produto no site. Adicione o primeiro acima."}</p>`;
+}
+function atualizarSelects() {
+  const v = $("linha").value;
+  $("linha").innerHTML = LIN.map(l => `<option value="${l.id}">${esc(l.nome)}</option>`).join("");
+  if (LIN.some(l => l.id === v)) $("linha").value = v;
+  tiposDaLinha();
+  $("cl").innerHTML = LIN.map(l => `<label class="ck"><input type="checkbox" value="${l.id}"> ${esc(l.nome)}</label>`).join("");
+}
+function slug(n, usados) {
+  const b = n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "") || "item";
+  let s = b, i = 2; while (usados.some(x => x.id === s)) s = b + i++; return s;
+}
+function desenharCats() {
+  $("lcat").innerHTML = LIN.map(l => `<div class="crow"><div><span class="nm">${esc(l.nome)}</span><div class="meta">${P.filter(p => p.linha === l.id).length} produto(s)</div></div><button class="del" onclick="remCat('${l.id}')">Remover</button></div>`).join("") || '<p class="hint">Nenhuma categoria ainda.</p>';
+  $("lsub").innerHTML = TIP.map(t => {
+    const onde = t.apenas ? t.apenas.map(a => (LIN.find(l => l.id === a) || {}).nome).filter(Boolean).join(", ") : "todas as categorias";
+    return `<div class="crow"><div><span class="nm">${esc(t.nome)}</span><div class="meta">${esc(onde)} · ${P.filter(p => p.tipo === t.id).length} produto(s)</div></div><button class="del" onclick="remSub('${t.id}')">Remover</button></div>`;
+  }).join("") || '<p class="hint">Nenhuma subcategoria ainda.</p>';
+}
+$("catBtn").onclick = () => {
+  const n = $("cnome").value.trim(); if (!n) return alert("Escreva o nome da categoria.");
+  if (LIN.some(l => l.nome.toLowerCase() === n.toLowerCase())) return alert("Essa categoria já existe.");
+  const id = slug(n, LIN); LIN.push({ id, nome: n });
+  const t = $("ctexto").value.trim(); if (t) SOB.push({ linha: id, texto: t });
+  $("cnome").value = ""; $("ctexto").value = "";
+  atualizarSelects(); desenhar(); marcar(true); toast("Categoria criada");
+};
+$("subBtn").onclick = () => {
+  const n = $("snome").value.trim(); if (!n) return alert("Escreva o nome da subcategoria.");
+  if (TIP.some(t => t.nome.toLowerCase() === n.toLowerCase())) return alert("Essa subcategoria já existe.");
+  const so = [...document.querySelectorAll("#cl input:checked")].map(i => i.value);
+  const t = { id: slug(n, TIP), nome: n }; if (so.length && so.length < LIN.length) t.apenas = so;
+  TIP.push(t); $("snome").value = "";
+  atualizarSelects(); desenhar(); marcar(true); toast("Subcategoria criada");
+};
+window.remCat = id => {
+  const l = LIN.find(x => x.id === id), n = P.filter(p => p.linha === id).length;
+  if (n) return alert("Há " + n + " produto(s) em “" + l.nome + "”. Remova esses produtos antes.");
+  if (!confirm("Remover a categoria “" + l.nome + "”? Subcategorias que existiam só nela também saem.")) return;
+  LIN = LIN.filter(x => x.id !== id); SOB = SOB.filter(s => s.linha !== id);
+  TIP.forEach(t => { if (t.apenas) t.apenas = t.apenas.filter(a => a !== id); });
+  TIP = TIP.filter(t => !(t.apenas && !t.apenas.length));
+  atualizarSelects(); desenhar(); marcar(true); toast("Categoria removida");
+};
+window.remSub = id => {
+  const t = TIP.find(x => x.id === id), n = P.filter(p => p.tipo === id).length;
+  if (n) return alert("Há " + n + " produto(s) em “" + t.nome + "”. Remova esses produtos antes.");
+  if (!confirm("Remover a subcategoria “" + t.nome + "”?")) return;
+  TIP = TIP.filter(x => x.id !== id);
+  atualizarSelects(); desenhar(); marcar(true); toast("Subcategoria removida");
+};
+function gerar() {
+  const arr = a => "[\n" + a.map(x => "  " + JSON.stringify(x)).join(",\n") + "\n]";
+  const val = { L: arr(LIN), T: arr(TIP), P: arr(P), S: arr(SOB), C: arr([CB]), F: "{ " + Object.entries(F).map(([k, v]) => JSON.stringify(k) + ": " + JSON.stringify(v)).join(", ") + " }" };
+  let out = "", pos = 0;
+  rg.slice().sort((a, b) => a[1][0] - b[1][0]).forEach(([k, r]) => { out += src.slice(pos, r[0]) + val[k].replace(/<\//g, "<\\/"); pos = r[1]; });
+  return out + src.slice(pos);
+}
+$("baixar").onclick = async () => {
+  if (semCor()) return;
+  const blob = new Blob([gerar()], { type: "text/html" }), ok = () => { marcar(false); toast("Arquivo baixado"); };
+  let dl = null, motivo = "";
+  try { if (window.claude && claude.use) dl = await claude.use("downloads"); } catch (e) {}
+  if (dl) {
+    try { await dl.save({ filename: "Charmant.html", data: blob }); return ok(); }
+    catch (e) { if (e && e.code === "declined") return; motivo = (e && (e.code || e.message)) || "erro"; }
+  }
+  const dentro = window.self !== window.top;
+  if (!dentro) {
+    try { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "Charmant.html"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); return ok(); } catch (e) { motivo = motivo || "download"; }
+  }
+  try {
+    const f = new File([blob], "Charmant.html", { type: "text/html" });
+    if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f] }); return ok(); }
+  } catch (e) { if (e && e.name === "AbortError") return; }
+  const st = $("st"); st.className = "dirty";
+  st.textContent = "Não consegui baixar (" + (motivo || "indisponível aqui") + "). Toque em Copiar código e cole em um arquivo chamado Charmant.html.";
+};
+$("copiar").onclick = async () => {
+  if (semCor()) return;
+  const t = gerar();
+  try { await navigator.clipboard.writeText(t); toast("Código copiado"); }
+  catch (e) { const x = document.createElement("textarea"); x.value = t; document.body.appendChild(x); x.select(); document.execCommand("copy"); x.remove(); toast("Código copiado"); }
+  marcar(false);
+};
+window.onbeforeunload = e => { if (dirty) { e.preventDefault(); e.returnValue = ""; } };
+</script>
+</body>
+</html>
