@@ -179,7 +179,7 @@ async function carregar(texto) {
     atualizarSelects(); desenhar(); marcar(false);
     $("st").textContent = "Nenhuma alteração ainda"; $("st").className = "";
     toast("Site carregado com " + P.length + " produtos");
-  } catch (err) { alert("Use o Charmant.html mais recente, com Dourado/Prata e Cuidados básicos.\n(" + err.message + ")"); }
+  } catch (err) { alert("Não consegui ler os dados do site.\n(" + err.message + ")\n\nRecebi " + String(texto).length + " caracteres. Começo:\n" + String(texto).slice(0, 120)); }
 }
 let ghOn = false, shaAtual = "", GH = { repo: "", branch: "main", token: "" };
 try { GH = Object.assign(GH, JSON.parse(localStorage.getItem("charmantGH"))); } catch (e) {}
@@ -196,11 +196,20 @@ $("ghLoad").onclick = async () => {
     const q = "?ref=" + encodeURIComponent(GH.branch);
     const r = await fetch(ghUrl() + q, { headers: ghHead() });
     if (!r.ok) throw new Error(ghMsg(r.status));
-    shaAtual = (await r.json()).sha;
-    const r2 = await fetch(ghUrl() + q, { headers: ghHead("application/vnd.github.raw+json") });
-    if (!r2.ok) throw new Error(ghMsg(r2.status));
-    ghOn = true; $("publicar").hidden = false; $("ghst").textContent = "Conectado.";
-    await carregar(await r2.text());
+    const j = await r.json();
+    if (Array.isArray(j) || j.type !== "file") throw new Error("O caminho index.html no GitHub não é um arquivo. Confira o repositório e a branch.");
+    shaAtual = j.sha;
+    let txt = "";
+    if (j.content && j.encoding === "base64") {
+      const bin = atob(j.content.replace(/\s/g, ""));
+      txt = new TextDecoder("utf-8").decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
+    } else {
+      const r2 = await fetch(ghUrl() + q, { headers: ghHead("application/vnd.github.raw+json") });
+      if (!r2.ok) throw new Error(ghMsg(r2.status));
+      txt = await r2.text();
+    }
+    ghOn = true; $("publicar").hidden = false; $("ghst").textContent = "Conectado. Lido " + txt.length + " caracteres de " + GH.repo + " (" + GH.branch + ").";
+    await carregar(txt);
   } catch (e) { $("ghst").textContent = e.message || "Não consegui conectar."; }
 };
 $("publicar").onclick = async () => {
