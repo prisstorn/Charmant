@@ -472,15 +472,15 @@ $("baixar").onclick = async () => {
   let dl = null, motivo = "";
   try { if (window.claude && claude.use) dl = await claude.use("downloads"); } catch (e) {}
   if (dl) {
-    try { await dl.save({ filename: "Charmant.html", data: blob }); return ok(); }
+    try { await dl.save({ filename: "index.html", data: blob }); return ok(); }
     catch (e) { if (e && e.code === "declined") return; motivo = (e && (e.code || e.message)) || "erro"; }
   }
   const dentro = window.self !== window.top;
   if (!dentro) {
-    try { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "Charmant.html"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); return ok(); } catch (e) { motivo = motivo || "download"; }
+    try { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "index.html"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); return ok(); } catch (e) { motivo = motivo || "download"; }
   }
   try {
-    const f = new File([blob], "Charmant.html", { type: "text/html" });
+    const f = new File([blob], "index.html", { type: "text/html" });
     if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f] }); return ok(); }
   } catch (e) { if (e && e.name === "AbortError") return; }
   const st = $("st"); st.className = "dirty";
