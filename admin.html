@@ -100,7 +100,17 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <div style="margin-top:12px"><button id="kAdd">Adicionar card</button></div>
 <p class="hint" id="kst"></p>
 <input type="file" id="ktroca" accept="image/*" hidden>
-<p class="hint">Os cards aparecem no topo da página inicial, com a imagem inteira, e deslizam para o lado. Use “Trocar imagem” para mudar só a foto de um card.</p>
+<p class="hint">Os cards viram o banner do topo da página inicial, em largura total, e trocam sozinhos a cada 5 segundos. Use imagens do mesmo tamanho (sugestão: 1080 × 1350 px). Use “Trocar imagem” para mudar só a foto de um card.</p>
+</section>
+
+<section>
+<h2>Cupons de desconto</h2>
+<div id="lcup"></div>
+<div class="row2" style="margin-top:12px"><div><label for="cupcod">Código do cupom</label><input id="cupcod" autocapitalize="characters" autocomplete="off" placeholder="BEMVINDA10"></div>
+<div><label for="cuppct">Desconto (%)</label><input id="cuppct" inputmode="decimal" placeholder="10"></div></div>
+<label for="cupmin">Vale a partir de (R$, vazio = sem mínimo)</label><input id="cupmin" inputmode="decimal" placeholder="50">
+<div style="margin-top:12px"><button id="cupAdd">Adicionar cupom</button></div>
+<p class="hint">O cliente digita o código no carrinho. O desconto é sobre o total dos produtos e só vale se a compra chegar ao valor mínimo. Atenção: os códigos ficam dentro do arquivo do site, então quem olhar o código-fonte consegue ver. Use para promoções abertas.</p>
 </section>
 
 <section>
@@ -159,10 +169,26 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <button class="sec" id="baixar">Baixar Charmant.html</button>
 <button class="sec" id="copiar">Copiar código</button>
 </div>
+<div id="ed" hidden style="position:fixed;inset:0;z-index:30;background:rgba(10,2,4,.88);overflow:auto;padding:16px 12px 48px">
+<div style="max-width:720px;margin:0 auto;background:var(--wine);border:1px solid var(--gold);border-radius:8px;padding:16px">
+<h2>Editar produto <span id="ecod" class="cod"></span></h2>
+<label for="enome">Nome</label><input id="enome">
+<label for="edesc">Descrição curta</label><input id="edesc">
+<label for="edet">Detalhes (opcional)</label><textarea id="edet"></textarea>
+<div class="row2"><div><label for="epreco">Preço em R$ (vazio = Consulte)</label><input id="epreco" inputmode="decimal"></div><div><label for="ecor">Cor</label><select id="ecor"></select></div></div>
+<div class="row2"><div><label for="elinha">Linha</label><select id="elinha"></select></div><div><label for="etipo">Tipo</label><select id="etipo"></select></div></div>
+<label for="envar">Variações numeradas na foto (vazio = nenhuma)</label><input id="envar" inputmode="numeric">
+<label>Fotos (a primeira é a principal)</label><div class="bgal" id="egal"></div>
+<label for="efotos">Adicionar fotos</label><input type="file" id="efotos" accept="image/*" multiple>
+<textarea id="elinks" placeholder="ou cole links de imagens (um por linha)" style="margin-top:8px"></textarea>
+<div style="margin-top:8px"><button class="sec" id="eAddF">Adicionar essas fotos</button></div>
+<p class="hint" id="est"></p>
+<div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button id="eSalvar">Salvar alterações</button><button class="sec" id="eCancel">Cancelar</button></div>
+</div></div>
 <div id="toast"></div>
 
 <script>
-let src = "", rg = null, P = [], F = {}, LIN = [], TIP = [], SOB = [], CAR = [], COR = [], CB = "", dirty = false, novas = [];
+let src = "", rg = null, P = [], F = {}, LIN = [], TIP = [], SOB = [], CAR = [], CUP = [], COR = [], CB = "", dirty = false, novas = [];
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const brl = n => n == null ? "Consulte" : n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -187,9 +213,9 @@ async function carregar(texto) {
   try {
     src = texto;
     const p = lit("PRODUTOS", "\n];", 2), fo = lit("FOTOS", "};", 1);
-    const li = lit("LINHAS", "\n];", 2), ti = lit("TIPOS", "\n];", 2), so = lit("SOBRE", "\n];", 2), co = lit("CORES", "\n];", 2), cb = lit("CUIDADOS_BASE", "\n];", 2), ka = lit("CARDS", "\n];", 2);
-    rg = [["L", li], ["T", ti], ["P", p], ["S", so], ["F", fo], ["C", cb], ["K", ka]];
-    P = ler(p[2]); F = ler(fo[2]); LIN = ler(li[2]); TIP = ler(ti[2]); SOB = ler(so[2]); CAR = ler(ka[2]); P.forEach(p => { if (p.vars) { p.mais = p.vars.slice(1); delete p.vars; } }); COR = ler(co[2]); CB = ler(cb[2])[0] || "";
+    const li = lit("LINHAS", "\n];", 2), ti = lit("TIPOS", "\n];", 2), so = lit("SOBRE", "\n];", 2), co = lit("CORES", "\n];", 2), cb = lit("CUIDADOS_BASE", "\n];", 2), ka = lit("CARDS", "\n];", 2), cu = lit("CUPONS", "\n];", 2);
+    rg = [["L", li], ["T", ti], ["P", p], ["S", so], ["F", fo], ["C", cb], ["K", ka], ["U", cu]];
+    P = ler(p[2]); F = ler(fo[2]); LIN = ler(li[2]); TIP = ler(ti[2]); SOB = ler(so[2]); CAR = ler(ka[2]); CUP = ler(cu[2]); P.forEach(p => { if (p.vars) { p.mais = p.vars.slice(1); delete p.vars; } }); COR = ler(co[2]); CB = ler(cb[2])[0] || "";
     $("cb").value = CB; $("cor").innerHTML = '<option value="">Escolha…</option>' + COR.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join("");
     $("painel").hidden = false; $("bar").hidden = false;
     atualizarSelects(); desenhar(); marcar(false);
@@ -248,11 +274,11 @@ function tiposDaLinha() {
   if ([...$("tipo").options].some(o => o.value === atual)) $("tipo").value = atual;
 }
 $("linha").onchange = tiposDaLinha;
-function reduzir(file) {
+function reduzir(file, m = 900) {
   return new Promise((ok, no) => {
     const u = URL.createObjectURL(file), im = new Image();
     im.onload = () => {
-      const m = 900, k = Math.min(1, m / Math.max(im.width, im.height)), c = document.createElement("canvas");
+      const k = Math.min(1, m / Math.max(im.width, im.height)), c = document.createElement("canvas");
       c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
       c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
       URL.revokeObjectURL(u); ok(c.toDataURL("image/jpeg", .82));
@@ -321,12 +347,12 @@ $("csalvar").onclick = () => {
   try { localStorage.setItem("charmantCloud", JSON.stringify(CFG)); } catch (e) {}
   $("cst").textContent = cfgOk() ? "Salvo. As fotos novas vão para o Cloudinary." : "Preencha os dois campos.";
 };
-async function nuvem(d) {
+async function nuvem(d, w = 900) {
   const f = new FormData(); f.append("file", d); f.append("upload_preset", CFG.preset);
   const r = await fetch("https://api.cloudinary.com/v1_1/" + encodeURIComponent(CFG.cloud) + "/image/upload", { method: "POST", body: f });
   const j = await r.json().catch(() => ({}));
   if (!r.ok || !j.secure_url) throw new Error((j.error && j.error.message) || "falha no envio ao Cloudinary");
-  return j.secure_url.replace("/upload/", "/upload/f_auto,q_auto,w_900/");
+  return j.secure_url.replace("/upload/", "/upload/f_auto,q_auto,w_" + w + "/");
 }
 const testar = u => new Promise(ok => { const i = new Image(); i.onload = () => ok(true); i.onerror = () => ok(false); i.src = u; });
 let BF = [], BL = [];
@@ -424,7 +450,7 @@ async function imgCard(file, url) {
     if (!(await testar(url))) throw new Error("Não consegui abrir essa imagem. Use o link direto da foto.");
     return url;
   }
-  const d = await reduzir(file); return cfgOk() ? await nuvem(d) : d;
+  const d = await reduzir(file, 1200); return cfgOk() ? await nuvem(d, 1200) : d;
 }
 $("kAdd").onclick = async () => {
   const f = $("kfile").files[0], url = $("kurl").value.trim(), t = $("kalvo").value, val = $("kvalor").value.trim();
@@ -450,6 +476,72 @@ $("ktroca").onchange = async e => {
 };
 window.kmov = (i, d) => { const j = i + d; if (j < 0 || j >= CAR.length) return; [CAR[i], CAR[j]] = [CAR[j], CAR[i]]; desenhar(); marcar(true); };
 window.krem = i => { if (!confirm("Remover este card?")) return; delete F[CAR[i].img]; CAR.splice(i, 1); desenhar(); marcar(true); };
+let EDI = -1, EDF = [], EDN = [];
+function tiposEd(sel) {
+  const l = $("elinha").value;
+  $("etipo").innerHTML = TIP.filter(t => !t.apenas || t.apenas.includes(l)).map(t => `<option value="${t.id}">${esc(t.nome)}</option>`).join("");
+  if ([...$("etipo").options].some(o => o.value === sel)) $("etipo").value = sel;
+}
+function edGal() {
+  $("egal").innerHTML = EDF.map((k, i) => `<div class="bg"><span class="bn">${i + 1}</span><img src="${F[k] || ""}" alt="Foto ${i + 1}"><div class="bm"><button class="sec" onclick="edmov(${i},-1)" aria-label="Mover foto ${i + 1} para trás">◀</button><button class="del" onclick="eddel(${i})" aria-label="Remover foto ${i + 1}">✕</button><button class="sec" onclick="edmov(${i},1)" aria-label="Mover foto ${i + 1} para frente">▶</button></div></div>`).join("");
+}
+window.edmov = (i, d) => { const j = i + d; if (j < 0 || j >= EDF.length) return; [EDF[i], EDF[j]] = [EDF[j], EDF[i]]; edGal(); };
+window.eddel = i => { if (EDF.length < 2) return alert("O produto precisa ter pelo menos uma foto."); EDF.splice(i, 1); edGal(); };
+window.editar = id => {
+  const p = P.find(x => x.id === id); if (!p) return;
+  EDI = id; EDF = [p.foto].concat(p.mais || []); EDN = [];
+  $("ecod").textContent = "Cód. " + id;
+  $("enome").value = p.nome; $("edesc").value = p.desc || ""; $("edet").value = p.detalhes || ""; $("epreco").value = p.preco == null ? "" : p.preco; $("envar").value = p.nvar || "";
+  $("ecor").innerHTML = COR.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join(""); $("ecor").value = p.cor || "";
+  $("elinha").innerHTML = LIN.map(l => `<option value="${l.id}">${esc(l.nome)}</option>`).join(""); $("elinha").value = p.linha;
+  tiposEd(p.tipo); $("est").textContent = ""; edGal(); $("ed").hidden = false;
+};
+$("elinha").onchange = () => tiposEd($("etipo").value);
+$("eAddF").onclick = async () => {
+  const fs = [...($("efotos").files || [])], links = $("elinks").value.split(/\s+/).filter(Boolean);
+  if (!fs.length && !links.length) return alert("Escolha fotos ou cole links.");
+  if (links.some(l => !/^https:\/\//i.test(l))) return alert("Os links precisam começar com https://");
+  $("est").textContent = "Processando…"; $("eAddF").disabled = true;
+  try {
+    for (const u of links) if (!(await testar(u))) throw new Error("Não consegui abrir esta imagem:\n" + u);
+    const novas = []; for (const f of fs) { const d = await reduzir(f); novas.push(cfgOk() ? await nuvem(d) : d); }
+    novas.concat(links).forEach(v => { const k = "f" + EDI + "_" + Date.now().toString(36) + EDN.length; F[k] = v; EDF.push(k); EDN.push(k); });
+    $("efotos").value = ""; $("elinks").value = ""; $("est").textContent = ""; edGal();
+  } catch (e) { $("est").textContent = ""; alert(e.message); }
+  $("eAddF").disabled = false;
+};
+$("eCancel").onclick = () => { EDN.forEach(k => delete F[k]); EDN = []; $("ed").hidden = true; };
+$("eSalvar").onclick = () => {
+  const p = P.find(x => x.id === EDI), nome = $("enome").value.trim(), pr = $("epreco").value.trim().replace(",", ".");
+  if (!nome) return alert("O nome não pode ficar vazio.");
+  if (pr && isNaN(Number(pr))) return alert("Preço inválido. Use só números, como 25 ou 25,50.");
+  if (!$("etipo").value) return alert("Escolha o tipo.");
+  Object.assign(p, { nome, desc: $("edesc").value.trim() || nome, cor: $("ecor").value, linha: $("elinha").value, tipo: $("etipo").value, preco: pr ? Number(pr) : null });
+  const det = $("edet").value.trim(); if (det) p.detalhes = det; else delete p.detalhes;
+  const nv = Math.floor(Number($("envar").value)); if (nv >= 2) p.nvar = Math.min(nv, 20); else delete p.nvar;
+  [p.foto].concat(p.mais || []).concat(EDN).filter(k => !EDF.includes(k)).forEach(k => delete F[k]);
+  p.foto = EDF[0]; if (EDF.length > 1) p.mais = EDF.slice(1); else delete p.mais;
+  EDN = []; $("ed").hidden = true; desenhar(); marcar(true); toast("Produto atualizado");
+};
+function desenharCup() {
+  $("lcup").innerHTML = CUP.map((c, i) => `<div class="crow" style="flex-wrap:wrap"><div><span class="nm">${esc(c.codigo)}</span><div class="meta">${c.pct}% a partir de ${brl(c.min || 0)}</div></div><div class="acts"><input aria-label="Desconto em %" inputmode="decimal" value="${c.pct}" style="width:64px;padding:7px" onchange="cupEd(${i},'pct',this.value)"><input aria-label="Valor mínimo" inputmode="decimal" value="${c.min || 0}" style="width:84px;padding:7px" onchange="cupEd(${i},'min',this.value)"><button class="del" onclick="cupRem(${i})">Remover</button></div></div>`).join("") || '<p class="hint">Nenhum cupom ainda.</p>';
+}
+$("cupAdd").onclick = () => {
+  const cod = $("cupcod").value.toUpperCase().replace(/[^A-Z0-9_-]/g, ""), pct = Number($("cuppct").value.replace(",", ".")), min = Number(($("cupmin").value || "0").replace(",", "."));
+  if (cod.length < 3) return alert("O código precisa ter pelo menos 3 letras ou números.");
+  if (CUP.some(c => c.codigo === cod)) return alert("Esse cupom já existe.");
+  if (!(pct > 0 && pct <= 100)) return alert("Digite a porcentagem de desconto, de 1 a 100.");
+  if (isNaN(min) || min < 0) return alert("O valor mínimo é inválido.");
+  CUP.push({ codigo: cod, pct, min });
+  ["cupcod", "cuppct", "cupmin"].forEach(i => $(i).value = "");
+  desenhar(); marcar(true); toast("Cupom " + cod + " criado");
+};
+window.cupEd = (i, k, v) => {
+  const n = Number(String(v).replace(",", "."));
+  if (isNaN(n) || n < 0 || (k === "pct" && (n <= 0 || n > 100))) { desenhar(); return alert("Valor inválido."); }
+  CUP[i][k] = n; desenhar(); marcar(true); toast("Cupom atualizado");
+};
+window.cupRem = i => { if (!confirm("Remover o cupom " + CUP[i].codigo + "?")) return; CUP.splice(i, 1); desenhar(); marcar(true); };
 $("migrar").onclick = async () => {
   if (!cfgOk()) return alert("Salve o Cloud name e o preset primeiro.");
   const ks = [...new Set(P.flatMap(p => [p.foto].concat(p.mais || [])).concat(CAR.map(c => c.img)))].filter(k => /^data:/.test(F[k] || ""));
@@ -472,6 +564,7 @@ function semCor() { const n = P.filter(p => !p.cor).length; if (n) alert(n + " p
 function desenhar() {
   desenharCats();
   desenharCards();
+  desenharCup();
   $("cnt").textContent = P.length;
   const q = $("busca").value.trim().toLowerCase();
   const l = P.filter(p => !q || String(p.id).includes(q) || p.nome.toLowerCase().includes(q));
@@ -481,7 +574,7 @@ function desenhar() {
     <div><div class="cod">Cód. ${p.id}</div><div class="nm">${esc(p.nome)}</div>
     <div class="meta">${esc(L ? L.nome : "")} · ${esc(T ? T.nome : "")} · ${brl(p.preco)}${p.nvar ? " · " + p.nvar + " variações" : ""}</div>
     <div class="acts"><select aria-label="Cor" onchange="setCor(${p.id},this.value)" style="width:auto;padding:7px"><option value="">⚠ sem cor</option>${COR.map(c => `<option value="${c.id}"${p.cor === c.id ? " selected" : ""}>${esc(c.nome)}</option>`).join("")}</select></div>
-    <div class="acts"><input aria-label="Preço" inputmode="decimal" value="${p.preco == null ? "" : p.preco}" placeholder="Consulte" onchange="preco(${p.id},this.value)"><input aria-label="Variações" inputmode="numeric" value="${p.nvar || ""}" placeholder="var." style="width:70px" onchange="setNvar(${p.id},this.value)"><button class="del" onclick="rem(${p.id})">Remover</button></div></div></div>`;
+    <div class="acts" style="flex-wrap:wrap"><button class="sec" onclick="editar(${p.id})">Editar</button><input aria-label="Preço" inputmode="decimal" value="${p.preco == null ? "" : p.preco}" placeholder="Consulte" onchange="preco(${p.id},this.value)"><input aria-label="Variações" inputmode="numeric" value="${p.nvar || ""}" placeholder="var." style="width:70px" onchange="setNvar(${p.id},this.value)"><button class="del" onclick="rem(${p.id})">Remover</button></div></div></div>`;
   }).join("") : `<p class="hint">${P.length ? "Nada encontrado para essa busca." : "Nenhum produto no site. Adicione o primeiro acima."}</p>`;
 }
 function atualizarSelects() {
@@ -537,7 +630,7 @@ window.remSub = id => {
 };
 function gerar() {
   const arr = a => "[\n" + a.map(x => "  " + JSON.stringify(x)).join(",\n") + "\n]";
-  const val = { L: arr(LIN), T: arr(TIP), P: arr(P), S: arr(SOB), C: arr([CB]), K: arr(CAR), F: "{ " + Object.entries(F).map(([k, v]) => JSON.stringify(k) + ": " + JSON.stringify(v)).join(", ") + " }" };
+  const val = { L: arr(LIN), T: arr(TIP), P: arr(P), S: arr(SOB), C: arr([CB]), K: arr(CAR), U: arr(CUP), F: "{ " + Object.entries(F).map(([k, v]) => JSON.stringify(k) + ": " + JSON.stringify(v)).join(", ") + " }" };
   let out = "", pos = 0;
   rg.slice().sort((a, b) => a[1][0] - b[1][0]).forEach(([k, r]) => { out += src.slice(pos, r[0]) + val[k].replace(/<\//g, "<\\/"); pos = r[1]; });
   return out + src.slice(pos);
