@@ -415,8 +415,8 @@ function achaBusca(p, q) {
   const txt = normB([p.nome, p.desc, p.detalhes, L && L.nome, T && T.nome, C && C.nome].join(" ")), cod = String(p.id);
   return q.split(/\s+/).filter(w => !/^(cod|codigo|n|no|num)$/.test(w)).every(w => /^\d+$/.test(w) ? cod.includes(w) : (txt.includes(w) || txt.includes(w.replace(/s$/, ""))));
 }
-function buscar(v) { fBusca = normB(v).replace(/[#:.]/g, " ").trim(); mostrar("loja", true); desenhar(); }
-function limparBusca(foco) { const i = document.getElementById("busca"); i.value = ""; fBusca = ""; desenhar(); if (foco) i.focus(); }
+function buscar(v) { fBusca = normB(v).replace(/[#:.]/g, " ").trim(); mostrar("loja", true); desenhar(); sincUrl(); }
+function limparBusca(foco) { const i = document.getElementById("busca"); i.value = ""; fBusca = ""; desenhar(); sincUrl(); if (foco) i.focus(); }
 // ===== TEXTOS DE "SOBRE AS PEÇAS" (edite à vontade) =====
 const SOBRE = [
   {"linha":"inox","texto":"Peças de aço inoxidável: um material resistente que não escurece com o uso comum do dia a dia. É a nossa linha mais durável, e é nela que ficam as alianças."},
@@ -483,15 +483,68 @@ function compartilhar(id) {
   if (navigator.share) { navigator.share({ title: p.nome, text: p.nome + " · " + LOJA.nome, url }).catch(() => {}); return; }
   if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => toast("Link copiado ✦"), () => prompt("Copie o link:", url)); else prompt("Copie o link:", url);
 }
-function abrirHash() { const m = location.hash.match(/^#p(\d+)(?:-(\d+))?$/); if (!m) return; const p = PRODUTOS.find(x => x.id === Number(m[1])); if (p) abrirDet(p.id, m[2] && Number(m[2]) <= (p.nvar || 0) ? Number(m[2]) : 0); }
-window.addEventListener("hashchange", abrirHash);
+let rotaOn = false, detPush = false;
+const TITULO_BASE = document.title;
+const nsCount = id => (CORES.some(x => x.id === id) ? 1 : 0) + (LINHAS.some(x => x.id === id) ? 1 : 0) + (TIPOS.some(x => x.id === id) ? 1 : 0);
+const segUrl = (k, id) => nsCount(id) > 1 ? k + "-" + id : id;
+function hashAtual() {
+  if (!document.getElementById("vsobre").hidden) return "#/sobre";
+  if (fBusca) return "#/busca/" + encodeURIComponent(fBusca);
+  const seg = [fLinha !== "todos" && segUrl("l", fLinha), fTipo !== "todos" && segUrl("t", fTipo), fCor !== "todos" && segUrl("c", fCor)].filter(Boolean);
+  return seg.length ? "#/" + seg.join("/") : verTodas ? "#/todas" : "#/";
+}
+function tituloPag() {
+  const L = LINHAS.find(x => x.id === fLinha), T = TIPOS.find(x => x.id === fTipo), C = CORES.find(x => x.id === fCor);
+  const n = !document.getElementById("vsobre").hidden ? ["Sobre as peças"] : fBusca ? ["Busca: " + fBusca] : [T && T.nome, L && L.nome, C && C.nome].filter(Boolean);
+  document.title = n.length ? n.join(" · ") + " | Charmant" : TITULO_BASE;
+}
+function sincUrl() {
+  if (rotaOn) return;
+  tituloPag();
+  const h = hashAtual(), atual = location.hash || "#/";
+  if (h === atual) return;
+  try { if (h.startsWith("#/busca/") && atual.startsWith("#/busca/")) history.replaceState(null, "", h); else history.pushState(null, "", h); } catch (e) {}
+}
+function aplicarRota() {
+  const h = location.hash || "#/", pm = h.match(/^#p(\d+)(?:-(\d+))?$/);
+  if (pm) { const p = PRODUTOS.find(x => x.id === Number(pm[1])); if (p) { fechar(); fecharMenu(); abrirDet(p.id, pm[2] && Number(pm[2]) <= (p.nvar || 0) ? Number(pm[2]) : 0, true); return; } }
+  document.getElementById("det").classList.remove("on"); detPush = false; fechar(); fecharMenu();
+  if (h === hashAtual()) { tituloPag(); return; }
+  rotaOn = true;
+  try {
+    const seg = h.replace(/^#\/?/, "").split("/").filter(Boolean).map(x => { try { return decodeURIComponent(x); } catch (e) { return x; } });
+    if (seg[0] === "sobre") abrirSobre();
+    else if (seg[0] === "busca") { const b = document.getElementById("busca"); fLinha = fTipo = fCor = "todos"; verTodas = false; b.value = seg.slice(1).join(" "); buscar(b.value); }
+    else if (seg[0] === "todas") todas();
+    else {
+      let l = "todos", t = "todos", c = "todos";
+      seg.forEach(x => {
+        const pre = x.match(/^([lct])-(.+)$/), id = pre ? pre[2] : x, ns = pre ? pre[1] : null;
+        if ((!ns || ns === "c") && CORES.some(y => y.id === id)) c = id;
+        else if ((!ns || ns === "l") && LINHAS.some(y => y.id === id)) l = id;
+        else if ((!ns || ns === "t") && TIPOS.some(y => y.id === id)) t = id;
+      });
+      if (l === "todos" && t === "todos" && c === "todos") ir("todos", "todos");
+      else { verTodas = false; fBusca = ""; document.getElementById("busca").value = ""; fLinha = l; fTipo = t; fCor = c; aplicarTema(l); mostrar("loja"); desenhar(); }
+    }
+  } finally { rotaOn = false; }
+  tituloPag();
+  const nh = hashAtual(); if (nh !== h) try { history.replaceState(null, "", nh); } catch (e) {}
+}
+function compartilharPagina() {
+  tituloPag(); const url = location.origin + location.pathname + hashAtual();
+  if (navigator.share) { navigator.share({ title: document.title, url }).catch(() => {}); return; }
+  if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => toast("Link copiado ✦"), () => prompt("Copie o link:", url)); else prompt("Copie o link:", url);
+}
+window.addEventListener("popstate", aplicarRota);
+window.addEventListener("hashchange", aplicarRota);
 function iniciar() {
   document.getElementById("sub").textContent = LOJA.slogan;
   document.title = LOJA.nome;
   desenhar();
   sobreHTML();
   atualizar();
-  abrirHash();
+  aplicarRota();
   setTimeout(() => { dicaPronta = true; atualizarDicas(); }, 1200);
 }
 function aplicarTema(l) {
@@ -507,8 +560,17 @@ function toast(m) {
 function galeria(p) { return [p.foto].concat(p.mais || []); }
 function escolherVar(v) { detVar = v; desenharDet(); }
 function addDet(id) { const p = PRODUTOS.find(x => x.id === id); if (p.nvar > 1 && !detVar) { toast("Escolha a variação ✦"); return; } add(id, p.nvar > 1 ? detVar : 0); fecharDet(); }
-function abrirDet(id, v) { detId = id; detFoto = 0; detVar = v || 0; desenharDet(); document.getElementById("det").classList.add("on"); try { history.replaceState(null, "", "#p" + id + (v ? "-" + v : "")); } catch (e) {} }
-function fecharDet() { document.getElementById("det").classList.remove("on"); try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} }
+function abrirDet(id, v, semUrl) {
+  detId = id; detFoto = 0; detVar = v || 0; desenharDet(); document.getElementById("det").classList.add("on");
+  const p = PRODUTOS.find(x => x.id === id); if (p) document.title = p.nome + " | Charmant";
+  if (semUrl) return;
+  try { const h = "#p" + id + (v ? "-" + v : ""); if (location.hash !== h) { history.pushState(null, "", h); detPush = true; } } catch (e) {}
+}
+function fecharDet() {
+  document.getElementById("det").classList.remove("on");
+  if (detPush) { detPush = false; try { history.back(); } catch (e) {} return; }
+  tituloPag(); try { history.replaceState(null, "", hashAtual()); } catch (e) {}
+}
 function trocarFoto(i) { detFoto = i; desenharDet(); }
 function zoom() {
   const z = document.getElementById("zoom");
@@ -549,10 +611,10 @@ function mostrar(v, manter) {
   atualizarDicas();
   if (!manter) window.scrollTo({ top: 0 });
 }
-function irCor(c) { if (c === "todos") verTodas = true; fBusca = ""; document.getElementById("busca").value = ""; fCor = c; aplicarTema(fLinha); fecharMenu(); mostrar("loja"); desenhar(); }
-function todas() { fBusca = ""; document.getElementById("busca").value = ""; fLinha = fTipo = fCor = "todos"; verTodas = true; aplicarTema("todos"); fecharMenu(); mostrar("loja"); desenhar(); }
-function ir(l, t) { verTodas = false; fBusca = ""; document.getElementById("busca").value = ""; fLinha = l; fTipo = t; if (l === "todos" && t === "todos") fCor = "todos"; aplicarTema(l); fecharMenu(); mostrar("loja"); desenhar(); }
-function abrirSobre() { aplicarTema(""); fecharMenu(); mostrar("sobre"); }
+function irCor(c) { if (c === "todos") verTodas = true; fBusca = ""; document.getElementById("busca").value = ""; fCor = c; aplicarTema(fLinha); fecharMenu(); mostrar("loja"); desenhar(); sincUrl(); }
+function todas() { fBusca = ""; document.getElementById("busca").value = ""; fLinha = fTipo = fCor = "todos"; verTodas = true; aplicarTema("todos"); fecharMenu(); mostrar("loja"); desenhar(); sincUrl(); }
+function ir(l, t) { verTodas = false; fBusca = ""; document.getElementById("busca").value = ""; fLinha = l; fTipo = t; if (l === "todos" && t === "todos") fCor = "todos"; aplicarTema(l); fecharMenu(); mostrar("loja"); desenhar(); sincUrl(); }
+function abrirSobre() { aplicarTema(""); fecharMenu(); mostrar("sobre"); sincUrl(); }
 function abrirMenu() { document.getElementById("menu").classList.add("on"); }
 function fecharMenu() { document.getElementById("menu").classList.remove("on"); }
 function cardHTML(p) {
@@ -599,7 +661,7 @@ function desenhar() {
   document.getElementById("buscaX").hidden = !fBusca;
   document.getElementById("cores").hidden = !!fBusca;
   document.getElementById("titulo").innerHTML = fBusca ? `<em class="gold">${lista.length} resultado${lista.length === 1 ? "" : "s"}</em>` : (L || T || C) ? `<em class="gold">${[T && T.nome, L && L.nome, C && C.nome].filter(Boolean).join(" · ")}</em>` : `Escolha <em class="gold">sua</em> peça`;
-  document.getElementById("volt").innerHTML = fBusca ? "" : (L || T || C || verTodas) ? `<button onclick="ir('todos','todos')">← voltar ao início</button>` : "";
+  document.getElementById("volt").innerHTML = fBusca ? "" : (L || T || C || verTodas) ? `<button onclick="ir('todos','todos')">← voltar ao início</button><button onclick="compartilharPagina()">Compartilhar esta página</button>` : "";
   const av = document.getElementById("aviso");
   av.hidden = !(T && T.aviso) || !!fBusca;
   av.innerHTML = T && T.aviso ? `<p>✦ ${T.aviso}</p><a class="add lnk" href="https://wa.me/${LOJA.whatsapp}?text=${encodeURIComponent("Olá! Gostaria de ver mais modelos de alianças.")}" target="_blank" rel="noopener">Consultar no WhatsApp</a>` : "";
