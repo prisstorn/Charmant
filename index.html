@@ -17,7 +17,7 @@ body::after{content:"";position:fixed;inset:7px;border:1.5px solid rgba(var(--gr
 header,main{position:relative;z-index:1}
 header{text-align:center;padding:34px 16px 4px}
 .gold{background:linear-gradient(var(--g1),var(--g2) 60%,var(--g3));-webkit-background-clip:text;background-clip:text;color:transparent}
-.slogan{margin:6px 0 0;font-family:"Great Vibes","Brush Script MT",cursive;font-size:2.6rem;line-height:1.1}
+.slogan{margin:8px 0 4px;font-family:"Great Vibes","Brush Script MT",cursive;font-size:1.9rem;line-height:1.12}
 .cat{margin:4px 0 0;font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;color:var(--paper);font-weight:600}
 .div{display:flex;align-items:center;gap:10px;max-width:260px;margin:14px auto 0;color:var(--gold)}
 .div::before,.div::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold))}
@@ -188,6 +188,63 @@ html:root[data-tema="prata"]{--bg:#5a3a9a;--bg2:#2f1b5c;--wine:#5b3a9a;--gold:#d
 @keyframes dquica{0%,100%{translate:0 0}50%{translate:0 -6px}}
 @keyframes dpulso{0%,100%{box-shadow:0 0 0 0 rgba(255,214,90,.95)}50%{box-shadow:0 0 0 11px rgba(255,214,90,0)}}
 @media (prefers-reduced-motion:reduce){.dica,.dica-alvo{animation:none!important}}
+
+/* Atalhos de categorias: destaques fáceis de identificar e tocar */
+.atalhos-categorias{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:12px 16px 10px;max-width:720px;margin:0 auto}
+.catatalho{min-width:0;min-height:132px;padding:10px 6px 9px;border:2px solid var(--gold);border-radius:16px;background:linear-gradient(150deg,rgba(255,239,202,.19),rgba(30,2,8,.5));color:var(--gold2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 12px rgba(0,0,0,.32),inset 0 0 0 1px rgba(255,255,255,.07);font-family:"Playfair Display",Georgia,serif;font-size:.91rem;font-weight:700;line-height:1.15;text-align:center;cursor:pointer}
+.catatalho:active{transform:scale(.97)}
+.catatalho:focus-visible{outline:3px solid var(--gold2);outline-offset:3px}
+.catatalho .catfoto{width:78px;height:78px;border-radius:50%;padding:3px;border:2px solid var(--gold2);background:var(--bg2);overflow:hidden;display:grid;place-items:center;box-shadow:0 0 0 3px rgba(217,173,95,.22),0 3px 8px rgba(0,0,0,.35)}
+.catatalho .catfoto img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.catatalho .catfallback{font-size:1.7rem;color:var(--gold)}
+.catatalho .catinstrucao{font:600 .68rem "Cormorant Garamond",Georgia,serif;letter-spacing:.06em;text-transform:uppercase;color:var(--paper)}
+.categorias-intro{text-align:center;margin:5px 12px 0;color:var(--gold2);font:700 1rem "Playfair Display",Georgia,serif;letter-spacing:.06em;text-transform:uppercase}
+@media(min-width:520px){.atalhos-categorias{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.catatalho{min-height:145px}.catatalho .catfoto{width:86px;height:86px}}
+@media(max-width:360px){.atalhos-categorias{gap:8px;padding-left:10px;padding-right:10px}.catatalho{font-size:.82rem;min-height:122px}.catatalho .catfoto{width:68px;height:68px}}
+/* Atalhos de pesquisa para quem prefere tocar em vez de digitar */
+.buscas-rapidas{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;max-width:560px;margin:9px auto 4px;padding:0 14px}
+.buscas-rapidas span{width:100%;text-align:center;color:var(--paper);font-size:.9rem;font-weight:700}
+.buscas-rapidas button{min-height:38px;padding:6px 13px;border:1px solid var(--gold);border-radius:999px;background:rgba(255,239,202,.08);color:var(--gold2);font:700 .9rem "Cormorant Garamond",Georgia,serif}
+.buscas-rapidas button:active{background:var(--gold);color:var(--ink)}
+/* Ajuda sempre visível, sem competir com o carrinho */
+.ajuda-flutuante{position:fixed;right:12px;bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:11;display:flex;align-items:center;gap:7px;max-width:calc(100vw - 24px);padding:10px 13px;border:1.5px solid var(--gold2);border-radius:999px;background:linear-gradient(var(--g1),var(--g2) 60%,var(--g3));color:var(--ink);box-shadow:0 4px 14px rgba(0,0,0,.45);font:700 .72rem "Playfair Display",Georgia,serif;text-decoration:none;letter-spacing:.025em}
+.ajuda-flutuante span{font-size:1.15rem;line-height:1}
+@media(min-width:700px){.ajuda-flutuante{right:22px;bottom:90px}}
+/* Textos e áreas de toque mais fáceis de ler e usar */
+.busca input{min-height:58px;font-size:1.12rem}
+#bar button,.fim,.add,.topo button{min-height:46px}
+#bar button{font-size:.82rem}
+.fim{font-size:.92rem;letter-spacing:.04em}
+
+/* Leitura confortável, contraste e comandos explícitos sem alterar a identidade visual */
+body{font-size:1.12rem;line-height:1.35}
+.slogan{font-size:1.75rem;line-height:1.15}
+.cat{display:none}
+h2.t{font-size:1.85rem;line-height:1.2;margin-top:24px}
+.card{transform:none!important;filter:drop-shadow(0 7px 9px rgba(0,0,0,.38))}
+.paper{clip-path:none;border:1px solid rgba(var(--gr),.6);border-radius:10px}
+.nome{font-size:1.08rem;line-height:1.25}
+.desc{font-size:1rem;line-height:1.3}
+.add{width:100%;min-height:52px;padding:12px 8px;font-size:.78rem;letter-spacing:.035em;line-height:1.2;border-radius:7px}
+.ver{min-height:42px;font-size:1.02rem}
+#bar{min-height:72px;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));font-size:1.02rem}
+#bar button{min-height:50px;padding:11px 16px;font-size:.82rem;border-radius:7px}
+.topo button{min-height:46px;font-size:.82rem;padding:8px 16px}
+.mi{min-height:48px;font-size:1.18rem}
+.cores button{min-height:46px;font-size:.86rem;padding:9px 19px}
+.sheet{font-size:1.08rem}
+.fim{min-height:56px;font-size:.9rem;line-height:1.25;border-radius:8px}
+.qtd button{width:40px;height:40px;font-size:1.15rem}
+input{min-height:50px;font-size:1.05rem}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--gold2);outline-offset:3px}
+@media(max-width:699px){.paper{padding:12px 9px 14px}.nome{font-size:1rem}.desc{font-size:.94rem}.add{font-size:.73rem;min-height:50px}.preco{font-size:.9rem}.info{padding-top:22px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+.como-comprar{margin:8px 0 22px;padding:14px 12px;border:1px solid var(--gold);border-radius:12px;background:linear-gradient(145deg,rgba(255,239,202,.13),rgba(30,2,8,.35));color:var(--paper)}
+.como-comprar h3{margin:0 0 12px;text-align:center;color:var(--gold2);font:700 1.15rem "Playfair Display",Georgia,serif}
+.passos-compra{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.passos-compra div{display:flex;align-items:center;gap:8px;min-height:48px;font-size:.98rem;font-weight:700;line-height:1.15}
+.passos-compra b{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(var(--g1),var(--g2));color:var(--ink);font:700 1rem "Playfair Display",Georgia,serif}
+@media(min-width:600px){.passos-compra{grid-template-columns:repeat(4,minmax(0,1fr))}}
 </style>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5102740909764926"
      crossorigin="anonymous"></script>
@@ -200,11 +257,18 @@ html:root[data-tema="prata"]{--bg:#5a3a9a;--bg2:#2f1b5c;--wine:#5b3a9a;--gold:#d
 <header>
 <span class="sp" style="left:14%;top:44px;font-size:1.5rem">✦</span><span class="sp" style="right:15%;top:70px;font-size:1rem;animation-delay:.8s">✦</span><span class="sp" style="left:26%;top:150px;font-size:.9rem;animation-delay:1.6s">✦</span><span class="sp" style="right:24%;top:30px;font-size:1.1rem;animation-delay:2.2s">♡</span>
 <p class="slogan gold" id="sub"></p>
-<p class="cat">semijoias folheadas · ouro 18k · prata</p>
-<div class="div">♥</div>
 </header>
 <div id="vloja">
-<form class="busca" role="search" onsubmit="event.preventDefault();this.q.blur()"><span class="lupa" aria-hidden="true">⌕</span><input type="search" name="q" id="busca" placeholder="Pesquisar peça ou código" aria-label="Pesquisar peças pelo nome ou código" autocomplete="off" autocapitalize="off" enterkeyhint="search" oninput="buscar(this.value)"><button type="button" class="lim" id="buscaX" onclick="limparBusca(true)" aria-label="Limpar pesquisa" hidden>✕</button></form>
+<p id="categorias-intro" class="categorias-intro">Toque para escolher sua categoria</p>
+<div id="atalhos-categorias" class="atalhos-categorias" aria-label="Escolha uma categoria"></div>
+<form class="busca" role="search" onsubmit="event.preventDefault();this.q.blur()"><span class="lupa" aria-hidden="true">⌕</span><input type="search" name="q" id="busca" placeholder="O que você está procurando?" aria-label="O que você está procurando? Digite o nome ou código da peça" autocomplete="off" autocapitalize="off" enterkeyhint="search" oninput="buscar(this.value)"><button type="button" class="lim" id="buscaX" onclick="limparBusca(true)" aria-label="Limpar pesquisa" hidden>✕</button></form>
+<div id="buscas-rapidas" class="buscas-rapidas" aria-label="Pesquisas rápidas">
+  <span>Mais procurados:</span>
+  <button type="button" onclick="atalhoTipo('brincos')">Brincos</button>
+  <button type="button" onclick="atalhoTipo('aneis')">Anéis</button>
+  <button type="button" onclick="atalhoTipo('colares')">Colares</button>
+  <button type="button" onclick="atalhoTipo('pulseiras')">Pulseiras</button>
+</div>
 <h2 class="t" id="titulo"></h2>
 <div class="volt" id="volt"></div>
 <div class="cores" id="cores"></div>
@@ -221,7 +285,8 @@ html:root[data-tema="prata"]{--bg:#5a3a9a;--bg2:#2f1b5c;--wine:#5b3a9a;--gold:#d
 <div id="dica1" class="dica d1" role="status" hidden><button class="dx" onclick="fecharDica(1)" aria-label="Fechar dica">✕</button><b>Não sabe como comprar?</b><span>Escolha um produto abaixo ↓</span><button class="dn" onclick="dicasOff()">Não mostrar mais dicas</button></div>
 <div id="dica2" class="dica d2" role="status" hidden><button class="dx" onclick="fecharDica(2)" aria-label="Fechar dica">✕</button><b>Produto adicionado ✓</b><span>Agora toque em “Ver carrinho” para finalizar ↓</span></div>
 <div id="toast"></div>
-<div id="bar"><div><span id="qtd">0</span> item(s) · <b id="tot">R$ 0,00</b></div><button onclick="abrir()">Ver carrinho</button></div>
+<div id="bar"><div><span id="qtd">0</span> item(ns)<br><b id="tot">R$ 0,00</b></div><button onclick="abrir()">VER CARRINHO</button></div>
+<a class="ajuda-flutuante" href="https://wa.me/5588996783102?text=Ol%C3%A1%21%20Preciso%20de%20ajuda%20para%20comprar%20na%20Charmant." target="_blank" rel="noopener" aria-label="Precisa de ajuda? Fale conosco pelo WhatsApp"><span aria-hidden="true">☏</span> PRECISA DE AJUDA? FALAR NO WHATSAPP</a>
 <div id="modal" onclick="if(event.target===this)fechar()"><div class="sheet">
 <button class="x" onclick="fechar()" aria-label="Fechar">✕</button>
 <div class="heart">♥</div>
@@ -232,8 +297,8 @@ html:root[data-tema="prata"]{--bg:#5a3a9a;--bg2:#2f1b5c;--wine:#5b3a9a;--gold:#d
 <div id="resumo"></div>
 <input id="nome" placeholder="Seu nome">
 <input id="obs" placeholder="Endereço ou observações (opcional)">
-<div id="dica3" class="dica d3" role="status" hidden><b>Coloque seu nome e aperte em “Finalizar no WhatsApp” ↓</b><span>A compra será finalizada no WhatsApp: lá você escolhe a forma de pagamento e a entrega ou retirada!</span><button class="dn" onclick="dicasOff()">Não mostrar mais dicas</button></div>
-<button class="fim" onclick="enviar()">Finalizar no WhatsApp</button>
+<div id="dica3" class="dica d3" role="status" hidden><b>Informe seu nome e toque em “Comprar pelo WhatsApp” ↓</b><span>A compra será finalizada no WhatsApp: lá você escolhe a forma de pagamento e a entrega ou retirada!</span><button class="dn" onclick="dicasOff()">Não mostrar mais dicas</button></div>
+<button class="fim" onclick="enviar()">Comprar pelo WhatsApp</button>
 <button class="fechar" onclick="fechar()">Continuar comprando</button>
 </div></div>
 <script>
@@ -441,6 +506,7 @@ function achaBusca(p, q) {
   return q.split(/\s+/).filter(w => !/^(cod|codigo|n|no|num)$/.test(w)).every(w => /^\d+$/.test(w) ? cod.includes(w) : (txt.includes(w) || txt.includes(w.replace(/s$/, ""))));
 }
 function buscar(v) { fBusca = normB(v).replace(/[#:.]/g, " ").trim(); mostrar("loja", true); desenhar(); sincUrl(); }
+function atalhoTipo(tipo) { const campo = document.getElementById("busca"); campo.value = ""; fBusca = ""; ir("todos", tipo); }
 function limparBusca(foco) { const i = document.getElementById("busca"); i.value = ""; fBusca = ""; desenhar(); sincUrl(); if (foco) i.focus(); }
 // ===== TEXTOS DE "SOBRE AS PEÇAS" (edite à vontade) =====
 const SOBRE = [
@@ -469,6 +535,20 @@ const HOME_LINHAS = ["inox", "prata925", "folheados"];
 let DEST = null;
 function embaralhar(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function secao(titulo, lista, extra, cls) { return lista.length ? `<section class="hsec${cls ? " " + cls : ""}"><div class="hh"><h3>${titulo}</h3>${extra || ""}</div><div class="hrow">${lista.map(cardHTML).join("")}</div></section>` : ""; }
+let THUMBS_CATEGORIAS = null;
+function categoriasHTML() {
+  if (!THUMBS_CATEGORIAS) {
+    THUMBS_CATEGORIAS = LINHAS.map(l => {
+      const produtos = PRODUTOS.filter(p => p.linha === l.id && p.foto && FOTOS[p.foto]);
+      const escolhido = produtos.length ? embaralhar(produtos)[0] : null;
+      return { linha: l, produto: escolhido };
+    });
+  }
+  return THUMBS_CATEGORIAS.map(({linha, produto}) => {
+    const imagem = produto ? foto(produto) : '<span class="catfallback" aria-hidden="true">✦</span>';
+    return `<button type="button" class="catatalho" onclick="ir('${linha.id}','todos')" aria-label="Toque para ver produtos da categoria ${linha.nome}"><span class="catfoto">${imagem}</span><span>${linha.nome}</span><span class="catinstrucao">Toque para ver</span></button>`;
+  }).join("");
+}
 function cardsHTML() {
   const l = CARDS.filter(c => FOTOS[c.img]);
   if (!l.length) return "";
@@ -498,7 +578,7 @@ function iniciarBanner() {
 function homeHTML() {
   const novos = PRODUTOS.slice(-6).reverse();
   if (!DEST) { const ids = new Set(novos.map(p => p.id)); let pool = PRODUTOS.filter(p => !ids.has(p.id)); if (pool.length < 6) pool = PRODUTOS; DEST = embaralhar(pool).slice(0, 6).map(p => p.id); }
-  let h = secao("✦ Destaques", DEST.map(id => PRODUTOS.find(p => p.id === id)).filter(Boolean)) + secao("Últimos adicionados", novos);
+  let h = `<section class="como-comprar"><h3>Comprar na Charmant é fácil!</h3><div class="passos-compra"><div><b>1</b><span>Escolha sua peça</span></div><div><b>2</b><span>Adicione ao carrinho</span></div><div><b>3</b><span>Confira seu pedido</span></div><div><b>4</b><span>Compre pelo WhatsApp</span></div></div></section>` + secao("✦ Destaques", DEST.map(id => PRODUTOS.find(p => p.id === id)).filter(Boolean)) + secao("Últimos adicionados", novos);
   HOME_LINHAS.forEach(id => { const l = LINHAS.find(x => x.id === id); if (l) h += secao(l.nome, PRODUTOS.filter(p => p.linha === id).slice(-8).reverse(), `<button onclick="ir('${id}','todos')">Ver tudo →</button>`, id === "prata925" ? "roxo" : ""); });
   return h + `<div style="text-align:center;margin:10px 0 0"><button class="add lnk" onclick="todas()">Ver todas as peças</button></div>`;
 }
@@ -611,7 +691,7 @@ function desenharDet() {
   const mini = mini0 + (vr ? `<div class="dvar">Escolha a variação${detVar ? ": <b>" + detVar + "</b>" : ""}</div><div class="vopts">${Array.from({ length: p.nvar }, (_, i) => `<button class="vo${detVar === i + 1 ? " on" : ""}" onclick="escolherVar(${i + 1})" aria-label="Variação ${i + 1}">${i + 1}</button>`).join("")}</div>` : "");
   const botao = p.preco == null
     ? `<button class="fim" onclick="perguntar(${p.id})">Perguntar valor</button>`
-    : `<button class="fim" onclick="addDet(${p.id})">Adicionar ao carrinho</button>`;
+    : `<button class="fim" onclick="addDet(${p.id})">ADICIONAR AO CARRINHO</button>`;
   const wa = `https://wa.me/${LOJA.whatsapp}?text=${encodeURIComponent("Olá! Tenho uma dúvida sobre: " + p.nome + " (Cód. " + p.id + (vr && detVar ? ", variação " + detVar : "") + ")" + fotoLink(p))}`;
   document.getElementById("detc").innerHTML = `
     <div class="dfoto"><img src="${FOTOS[g[detFoto]]}" alt="${p.nome}" onclick="zoom()"><span class="dz">toque para ampliar</span></div>${mini}
@@ -623,7 +703,7 @@ function desenharDet() {
     <div class="dpreco">${p.preco == null ? "Consulte o valor" : brl(p.preco)}</div>
     ${botao}
     <button class="cpt" onclick="compartilhar(${p.id})">Compartilhar</button>
-    <a class="dwa" href="${wa}" target="_blank" rel="noopener">Tirar dúvidas no WhatsApp</a>`;
+    <a class="dwa" href="${wa}" target="_blank" rel="noopener">DÚVIDAS? FALE CONOSCO PELO WHATSAPP</a>`;
 }
 function perguntar(id) {
   const p = PRODUTOS.find(x => x.id === id);
@@ -646,8 +726,8 @@ function cardHTML(p) {
   return `
     <div class="card"><i class="tp t1"></i><i class="tp t2"></i><div class="paper">
     <div class="img" onclick="abrirDet(${p.id})">${foto(p)}<div class="preco">${p.preco == null ? "Consulte" : brl(p.preco)}</div></div>
-    <div class="info"><div class="nome" onclick="abrirDet(${p.id})">${p.nome}</div><div class="desc">${p.desc}${p.nvar > 1 ? ` · ${p.nvar} variações` : ""}</div><button class="ver" onclick="abrirDet(${p.id})">ver detalhes</button>
-    ${p.nvar > 1 ? `<button class="add" onclick="abrirDet(${p.id})">Escolher variação</button>` : p.preco == null ? `<button class="add" onclick="perguntar(${p.id})">Perguntar valor</button>` : `<button class="add" onclick="add(${p.id})">Adicionar</button>`}</div></div></div>`;
+    <div class="info"><div class="nome" onclick="abrirDet(${p.id})">${p.nome}</div><div class="desc">${p.desc}${p.nvar > 1 ? ` · ${p.nvar} variações` : ""}</div><button class="ver" onclick="abrirDet(${p.id})">VER DETALHES</button>
+    ${p.nvar > 1 ? `<button class="add" onclick="abrirDet(${p.id})">ESCOLHER OPÇÕES DE COMPRA</button>` : p.preco == null ? `<button class="add" onclick="perguntar(${p.id})">CONSULTAR PELO WHATSAPP</button>` : `<button class="add" onclick="add(${p.id})">ADICIONAR AO CARRINHO</button>`}</div></div></div>`;
 }
 function sobreHTML() {
   const cards = SOBRE.map(s => {
@@ -664,12 +744,13 @@ function menuHTML() {
     const on = fLinha === l && fTipo === t ? " on" : "";
     return `<button class="mi${c ? "" : " vz"}${on}" onclick="ir('${l}','${t}')">${nome}<span>${c ? c : "em breve"}</span></button>`;
   };
-  let h = `<button class="mi" onclick="ir('todos','todos')">⌂ Início<span></span></button><button class="mi${verTodas && fLinha === "todos" && fTipo === "todos" && fCor === "todos" ? " on" : ""}" onclick="todas()">✦ Todas as peças<span>${PRODUTOS.length}</span></button>` + `<div class="gh">Por cor</div>` + CORES.map(c => `<button class="mi${fCor === c.id ? " on" : ""}" onclick="irCor('${c.id}')">${c.nome}<span>${quantos("todos", "todos", c.id)}</span></button>`).join("") + `<div class="gh">Por linha</div>`;
+  let h = `<button class="mi" onclick="ir('todos','todos')">⌂ Início<span></span></button><button class="mi${verTodas && fLinha === "todos" && fTipo === "todos" && fCor === "todos" ? " on" : ""}" onclick="todas()">✦ Todas as peças<span>${PRODUTOS.length}</span></button>`;
+  h += `<details class="lin"><summary>Filtrar por cor</summary>` + CORES.map(c => `<button class="mi${fCor === c.id ? " on" : ""}" onclick="irCor('${c.id}')">${c.nome}<span>${quantos("todos", "todos", c.id)}</span></button>`).join("") + `</details><div class="gh">Escolha uma categoria</div>`;
   LINHAS.forEach(l => {
     const tipos = TIPOS.filter(t => !t.apenas || t.apenas.includes(l.id));
     h += `<details class="lin"${fLinha === l.id ? " open" : ""}><summary>${l.nome}</summary>${item(l.id, "todos", "Ver tudo")}${tipos.map(t => item(l.id, t.id, t.nome)).join("")}</details>`;
   });
-  h += `<div class="gh">Por tipo (todas as linhas)</div>` + TIPOS.map(t => item("todos", t.id, t.nome)).join("");
+  h += `<details class="lin"><summary>Ver por tipo de peça</summary>` + TIPOS.map(t => item("todos", t.id, t.nome)).join("") + `</details>`;
   h += `<div class="gh">Mais</div><button class="mi" onclick="abrirSobre()">♡ Sobre as peças<span></span></button><a class="mi" href="https://wa.me/${LOJA.whatsapp}" target="_blank" rel="noopener">Falar no WhatsApp<span></span></a><a class="mi" href="https://instagram.com/usecharmant2" target="_blank" rel="noopener">Instagram @usecharmant2<span></span></a>`;
   return h;
 }
@@ -678,12 +759,16 @@ function desenhar() {
   document.getElementById("cores").innerHTML = [{ id: "todos", nome: "Todas" }].concat(CORES).map(c => `<button class="${fCor === c.id ? "on" : ""}" onclick="irCor('${c.id}')">${c.nome}</button>`).join("");
   const lista = fBusca ? PRODUTOS.filter(p => achaBusca(p, fBusca)) : PRODUTOS.filter(p => (fLinha === "todos" || p.linha === fLinha) && (fTipo === "todos" || p.tipo === fTipo) && (fCor === "todos" || p.cor === fCor));
   const home = !fBusca && !L && !T && !C && !verTodas;
+  document.getElementById("atalhos-categorias").hidden = !home;
+  document.getElementById("categorias-intro").hidden = !home;
+  if (home) document.getElementById("atalhos-categorias").innerHTML = categoriasHTML();
   document.getElementById("home").hidden = !home; document.getElementById("grid").hidden = home;
   if (home) document.getElementById("home").innerHTML = homeHTML();
   const ban = document.getElementById("banner"), kk = JSON.stringify(CARDS);
   if (home && ban.dataset.k !== kk) { ban.innerHTML = cardsHTML(); ban.dataset.k = kk; iniciarBanner(); }
   ban.hidden = !home || !ban.innerHTML;
   document.getElementById("buscaX").hidden = !fBusca;
+  document.getElementById("buscas-rapidas").hidden = !!fBusca || !home;
   document.getElementById("cores").hidden = !!fBusca;
   document.getElementById("titulo").innerHTML = fBusca ? `<em class="gold">${lista.length} resultado${lista.length === 1 ? "" : "s"}</em>` : (L || T || C) ? `<em class="gold">${[T && T.nome, L && L.nome, C && C.nome].filter(Boolean).join(" · ")}</em>` : `Escolha <em class="gold">sua</em> peça`;
   document.getElementById("volt").innerHTML = fBusca ? "" : (L || T || C || verTodas) ? `<button onclick="ir('todos','todos')">← voltar ao início</button><button onclick="compartilharPagina()">Compartilhar esta página</button>` : "";
@@ -723,7 +808,7 @@ function atualizar() {
   document.getElementById("itens").innerHTML = l.length ? l.map(i => `
     <div class="item"><div>${i.p.nome}${i.v ? " · variação " + i.v : ""}<br><small>Cód. ${i.p.id} · ${brl(i.p.preco)}</small></div>
     <div class="qtd"><button onclick="mudar('${i.k}',-1)">−</button><span>${i.q}</span><button onclick="mudar('${i.k}',1)">+</button></div></div>`).join("")
-    : "<p>Seu carrinho está vazio.</p>";
+    : "<p>Seu carrinho está vazio. Escolha uma peça e toque em <b>ADICIONAR AO CARRINHO</b>.</p>";
 }
 let d1Fechada = false, d2Ativa = false, d2Vista = false, dicaPronta = false;
 function dicasOn() { try { return localStorage.getItem("charmantDicas") !== "off"; } catch (e) { return true; } }
