@@ -583,8 +583,10 @@ function homeHTML() {
   return h + `<div style="text-align:center;margin:10px 0 0"><button class="add lnk" onclick="todas()">Ver todas as peças</button></div>`;
 }
 function compartilhar(id) {
-  const p = PRODUTOS.find(x => x.id === id), v = p.nvar > 1 && detVar ? detVar : 0;
-  const url = location.origin + location.pathname + "#p" + id + (v ? "-" + v : "");
+  const p = PRODUTOS.find(x => x.id === id);
+  if (!p) return;
+  const v = p.nvar > 1 && detVar ? detVar : 0;
+  const url = location.origin + "/produto/" + id + (v ? "?var=" + v : "");
   if (navigator.share) { navigator.share({ title: p.nome, text: p.nome + " · " + LOJA.nome, url }).catch(() => {}); return; }
   if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => toast("Link copiado ✦"), () => prompt("Copie o link:", url)); else prompt("Copie o link:", url);
 }
@@ -611,6 +613,16 @@ function sincUrl() {
   try { if (h.startsWith("#/busca/") && atual.startsWith("#/busca/")) history.replaceState(null, "", h); else history.pushState(null, "", h); } catch (e) {}
 }
 function aplicarRota() {
+  const caminhoProduto = location.pathname.match(/^\/produto\/(\d+)\/?$/);
+  if (caminhoProduto) {
+    const p = PRODUTOS.find(x => x.id === Number(caminhoProduto[1]));
+    if (p) {
+      const v = Number(new URLSearchParams(location.search).get("var") || 0);
+      fechar(); fecharMenu();
+      abrirDet(p.id, p.nvar > 1 && v >= 1 && v <= p.nvar ? v : 0, true);
+      return;
+    }
+  }
   const h = location.hash || "#/", pm = h.match(/^#p(\d+)(?:-(\d+))?$/);
   if (pm) { const p = PRODUTOS.find(x => x.id === Number(pm[1])); if (p) { fechar(); fecharMenu(); abrirDet(p.id, pm[2] && Number(pm[2]) <= (p.nvar || 0) ? Number(pm[2]) : 0, true); return; } }
   document.getElementById("det").classList.remove("on"); detPush = false; fechar(); fecharMenu();
@@ -674,6 +686,9 @@ function abrirDet(id, v, semUrl) {
 function fecharDet() {
   document.getElementById("det").classList.remove("on");
   if (detPush) { detPush = false; try { history.back(); } catch (e) {} return; }
+  if (/^\/produto\/\d+\/?$/.test(location.pathname)) {
+    try { history.replaceState(null, "", "/" + hashAtual()); } catch (e) {}
+  }
   tituloPag(); try { history.replaceState(null, "", hashAtual()); } catch (e) {}
 }
 function trocarFoto(i) { detFoto = i; desenharDet(); }
