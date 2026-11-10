@@ -583,8 +583,10 @@ function homeHTML() {
   return h + `<div style="text-align:center;margin:10px 0 0"><button class="add lnk" onclick="todas()">Ver todas as peças</button></div>`;
 }
 function compartilhar(id) {
-  const p = PRODUTOS.find(x => x.id === id), v = p.nvar > 1 && detVar ? detVar : 0;
-  const url = location.origin + location.pathname + "#p" + id + (v ? "-" + v : "");
+  const p = PRODUTOS.find(x => x.id === id);
+  if (!p) return;
+  const v = p.nvar > 1 && detVar ? detVar : 0;
+  const url = location.origin + "/produto/" + encodeURIComponent(id) + (v ? "?v=" + v : "");
   if (navigator.share) { navigator.share({ title: p.nome, text: p.nome + " · " + LOJA.nome, url }).catch(() => {}); return; }
   if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => toast("Link copiado ✦"), () => prompt("Copie o link:", url)); else prompt("Copie o link:", url);
 }
@@ -649,7 +651,15 @@ function iniciar() {
   desenhar();
   sobreHTML();
   atualizar();
-  aplicarRota();
+  const rotaProduto = location.pathname.match(/^\\/produto\\/(\\d+)\\/?$/);
+  if (rotaProduto) {
+    const produto = PRODUTOS.find(x => String(x.id) === rotaProduto[1]);
+    const variacao = Math.max(0, Number(new URLSearchParams(location.search).get("v")) || 0);
+    if (produto) abrirDet(produto.id, variacao <= (produto.nvar || 0) ? variacao : 0, true);
+    else aplicarRota();
+  } else {
+    aplicarRota();
+  }
   setTimeout(() => { dicaPronta = true; atualizarDicas(); }, 1200);
 }
 function aplicarTema(l) {
