@@ -50,6 +50,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .bn{position:absolute;top:5px;left:5px;min-width:26px;height:26px;padding:0 4px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:var(--gold2);color:var(--ink);font:700 .9rem "Playfair Display",Georgia,serif}
 .bm{display:flex;gap:4px;margin-top:4px}
 .bm button{flex:1;padding:7px 0;font-size:.8rem}
+
+.vlist{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0 14px}
+.vitem{display:flex;align-items:center;gap:5px;padding:8px;border:1px solid rgba(217,173,95,.5);border-radius:4px;background:rgba(0,0,0,.12);font-size:.9rem}
 </style>
 </head>
 <body>
@@ -149,6 +152,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <div class="prev" id="prev"></div>
 <label for="links">Ou cole links de imagens (um por linha)</label><textarea id="links" placeholder="https://..."></textarea>
 <label for="nvar">Variações numeradas na foto (opcional)</label><input id="nvar" inputmode="numeric" placeholder="Ex.: 3, se a foto mostra 3 peças com números 1, 2 e 3">
+<label class="ck"><input type="checkbox" id="freteNovo"> Este produto é elegível ao frete grátis</label>
+<label class="ck"><input type="checkbox" id="dispNovo" checked> Produto disponível para venda</label>
+<p class="hint">O frete grátis vale para peças marcadas com este selo, quando a cliente compra essa peça + pelo menos mais 1 produto da Charmant.</p>
 <p class="hint">O código do produto (5 números) é criado sozinho ao adicionar.</p>
 <div style="margin-top:14px"><button id="addBtn">Adicionar produto</button></div>
 </section>
@@ -156,6 +162,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <section>
 <h2>5. Produtos no site (<span id="cnt">0</span>)</h2>
 <label for="busca">Buscar por código ou nome</label><input id="busca" placeholder="Ex.: 66789">
+<label for="filtroStatus">Filtrar produtos</label><select id="filtroStatus"><option value="todos">Todos os produtos</option><option value="disponiveis">Disponíveis</option><option value="esgotados">Esgotados</option><option value="frete">Elegíveis ao frete grátis</option></select>
 <div id="lista" style="margin-top:8px"></div>
 <label for="rid" style="margin-top:16px">Remover pelo código</label>
 <div class="inline"><input id="rid" inputmode="numeric" placeholder="Código do produto"><button class="del" id="ridBtn">Remover</button></div>
@@ -178,6 +185,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <div class="row2"><div><label for="epreco">Preço em R$ (vazio = Consulte)</label><input id="epreco" inputmode="decimal"></div><div><label for="ecor">Cor</label><select id="ecor"></select></div></div>
 <div class="row2"><div><label for="elinha">Linha</label><select id="elinha"></select></div><div><label for="etipo">Tipo</label><select id="etipo"></select></div></div>
 <label for="envar">Variações numeradas na foto (vazio = nenhuma)</label><input id="envar" inputmode="numeric">
+<div id="evars"></div>
+<label class="ck"><input type="checkbox" id="efrete"> Este produto é elegível ao frete grátis</label>
+<label class="ck"><input type="checkbox" id="edisponivel" checked> Produto disponível para venda</label>
+<p class="hint">Marque como esgotada somente a variação que acabou. Ela continuará identificada pelo número da foto, mas não poderá ser selecionada.</p>
 <label>Fotos (a primeira é a principal)</label><div class="bgal" id="egal"></div>
 <label for="efotos">Adicionar fotos</label><input type="file" id="efotos" accept="image/*" multiple>
 <textarea id="elinks" placeholder="ou cole links de imagens (um por linha)" style="margin-top:8px"></textarea>
@@ -314,11 +325,13 @@ $("addBtn").onclick = async () => {
   const id = novoId(), keys = fin.map((_, i) => "f" + id + "_" + i);
   keys.forEach((k, i) => F[k] = fin[i]);
   const p = { id, cor: $("cor").value, linha: $("linha").value, tipo: $("tipo").value, nome, desc: desc || nome, preco: pr ? Number(pr) : null, foto: keys[0] };
+  if ($("freteNovo").checked) p.freteGratis = true;
+  if (!$("dispNovo").checked) p.disponivel = false;
   if (keys.length > 1) p.mais = keys.slice(1);
   const nv = Math.floor(Number($("nvar").value)); if (nv >= 2) p.nvar = Math.min(nv, 20);
   if (det) p.detalhes = det;
   P.push(p);
-  ["nome", "desc", "det", "preco", "fotos", "links"].forEach(i => $(i).value = ""); $("nvar").value = "";
+  ["nome", "desc", "det", "preco", "fotos", "links"].forEach(i => $(i).value = ""); $("nvar").value = ""; $("freteNovo").checked = false; $("dispNovo").checked = true;
   novas = []; $("prev").innerHTML = "";
   desenhar(); marcar(true); toast("Adicionado! Código " + id);
 };
@@ -332,7 +345,23 @@ function remover(id) {
 }
 $("ridBtn").onclick = () => { const v = Number($("rid").value.trim()); if (!v) return alert("Digite o código."); remover(v); $("rid").value = ""; };
 window.rem = remover;
-window.setNvar = (id, v) => { const p = P.find(x => x.id === id), n = Math.floor(Number(v)); if (n >= 2) p.nvar = Math.min(n, 20); else delete p.nvar; desenhar(); marcar(true); toast(p.nvar ? p.nvar + " variações" : "Sem variações"); };
+window.setDisp = (id, disponivel) => {
+  const p = P.find(x => x.id === id); if (!p) return;
+  p.disponivel = !!disponivel; desenhar(); marcar(true);
+  toast(p.disponivel ? "Produto reativado" : "Produto marcado como esgotado");
+};
+function desenharVarsEd() {
+  const n = Math.max(0, Math.min(20, Math.floor(Number($("envar").value) || 0)));
+  const esg = new Set(EVARS);
+  $("evars").innerHTML = n >= 2 ? '<label>Variações esgotadas</label><div class="vlist">' + Array.from({length:n},(_,i)=>'<label class="vitem"><input type="checkbox" value="'+(i+1)+'" '+(esg.has(i+1)?"checked":"")+' onchange="marcarVarEsgotada('+ (i+1) +',this.checked)"> Nº '+(i+1)+'</label>').join("") + '</div>' : '<p class="hint">Informe 2 ou mais variações para gerenciar cada número.</p>';
+}
+window.marcarVarEsgotada = (v, marcado) => {
+  if (marcado) { if (!EVARS.includes(v)) EVARS.push(v); }
+  else EVARS = EVARS.filter(x => x !== v);
+  EVARS = EVARS.filter(n => n >= 1 && n <= Number($("envar").value)).sort((x,y)=>x-y);
+};
+$("envar").oninput = desenharVarsEd;
+window.setNvar = (id, v) => { const p = P.find(x => x.id === id), n = Math.floor(Number(v)); if (n >= 2) p.nvar = Math.min(n, 20); else delete p.nvar; if (p.nvar) p.varEsgotadas = (p.varEsgotadas || []).filter(x => x <= p.nvar); else delete p.varEsgotadas; desenhar(); marcar(true); toast(p.nvar ? p.nvar + " variações" : "Sem variações"); };
 window.preco = (id, v) => {
   const p = P.find(x => x.id === id); v = v.trim().replace(",", ".");
   if (v && isNaN(Number(v))) return alert("Preço inválido.");
@@ -476,7 +505,7 @@ $("ktroca").onchange = async e => {
 };
 window.kmov = (i, d) => { const j = i + d; if (j < 0 || j >= CAR.length) return; [CAR[i], CAR[j]] = [CAR[j], CAR[i]]; desenhar(); marcar(true); };
 window.krem = i => { if (!confirm("Remover este card?")) return; delete F[CAR[i].img]; CAR.splice(i, 1); desenhar(); marcar(true); };
-let EDI = -1, EDF = [], EDN = [];
+let EDI = -1, EDF = [], EDN = [], EVARS = [];
 function tiposEd(sel) {
   const l = $("elinha").value;
   $("etipo").innerHTML = TIP.filter(t => !t.apenas || t.apenas.includes(l)).map(t => `<option value="${t.id}">${esc(t.nome)}</option>`).join("");
@@ -489,12 +518,12 @@ window.edmov = (i, d) => { const j = i + d; if (j < 0 || j >= EDF.length) return
 window.eddel = i => { if (EDF.length < 2) return alert("O produto precisa ter pelo menos uma foto."); EDF.splice(i, 1); edGal(); };
 window.editar = id => {
   const p = P.find(x => x.id === id); if (!p) return;
-  EDI = id; EDF = [p.foto].concat(p.mais || []); EDN = [];
+  EDI = id; EDF = [p.foto].concat(p.mais || []); EDN = []; EVARS = (p.varEsgotadas || []).slice();
   $("ecod").textContent = "Cód. " + id;
-  $("enome").value = p.nome; $("edesc").value = p.desc || ""; $("edet").value = p.detalhes || ""; $("epreco").value = p.preco == null ? "" : p.preco; $("envar").value = p.nvar || "";
+  $("enome").value = p.nome; $("edesc").value = p.desc || ""; $("edet").value = p.detalhes || ""; $("epreco").value = p.preco == null ? "" : p.preco; $("envar").value = p.nvar || ""; $("efrete").checked = elegivelFrete(p); $("edisponivel").checked = p.disponivel !== false;
   $("ecor").innerHTML = COR.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join(""); $("ecor").value = p.cor || "";
   $("elinha").innerHTML = LIN.map(l => `<option value="${l.id}">${esc(l.nome)}</option>`).join(""); $("elinha").value = p.linha;
-  tiposEd(p.tipo); $("est").textContent = ""; edGal(); $("ed").hidden = false;
+  tiposEd(p.tipo); $("est").textContent = ""; edGal(); desenharVarsEd(); $("ed").hidden = false;
 };
 $("elinha").onchange = () => tiposEd($("etipo").value);
 $("eAddF").onclick = async () => {
@@ -510,7 +539,7 @@ $("eAddF").onclick = async () => {
   } catch (e) { $("est").textContent = ""; alert(e.message); }
   $("eAddF").disabled = false;
 };
-$("eCancel").onclick = () => { EDN.forEach(k => delete F[k]); EDN = []; $("ed").hidden = true; };
+$("eCancel").onclick = () => { EDN.forEach(k => delete F[k]); EDN = []; EVARS = []; $("ed").hidden = true; };
 $("eSalvar").onclick = () => {
   const p = P.find(x => x.id === EDI), nome = $("enome").value.trim(), pr = $("epreco").value.trim().replace(",", ".");
   if (!nome) return alert("O nome não pode ficar vazio.");
@@ -518,10 +547,14 @@ $("eSalvar").onclick = () => {
   if (!$("etipo").value) return alert("Escolha o tipo.");
   Object.assign(p, { nome, desc: $("edesc").value.trim() || nome, cor: $("ecor").value, linha: $("elinha").value, tipo: $("etipo").value, preco: pr ? Number(pr) : null });
   const det = $("edet").value.trim(); if (det) p.detalhes = det; else delete p.detalhes;
-  const nv = Math.floor(Number($("envar").value)); if (nv >= 2) p.nvar = Math.min(nv, 20); else delete p.nvar;
+  const nv = Math.floor(Number($("envar").value)); if (nv >= 2) p.nvar = Math.min(nv, 20); else { delete p.nvar; delete p.varEsgotadas; }
+  if (p.nvar) p.varEsgotadas = EVARS.filter(v => v >= 1 && v <= p.nvar);
+  if (!p.varEsgotadas || !p.varEsgotadas.length) delete p.varEsgotadas;
+  if ($("efrete").checked) p.freteGratis = true; else p.freteGratis = false;
+  if ($("edisponivel").checked) delete p.disponivel; else p.disponivel = false;
   [p.foto].concat(p.mais || []).concat(EDN).filter(k => !EDF.includes(k)).forEach(k => delete F[k]);
   p.foto = EDF[0]; if (EDF.length > 1) p.mais = EDF.slice(1); else delete p.mais;
-  EDN = []; $("ed").hidden = true; desenhar(); marcar(true); toast("Produto atualizado");
+  EDN = []; EVARS = []; $("ed").hidden = true; desenhar(); marcar(true); toast("Produto atualizado");
 };
 function desenharCup() {
   $("lcup").innerHTML = CUP.map((c, i) => `<div class="crow" style="flex-wrap:wrap"><div><span class="nm">${esc(c.codigo)}</span><div class="meta">${c.pct}% a partir de ${brl(c.min || 0)}</div></div><div class="acts"><input aria-label="Desconto em %" inputmode="decimal" value="${c.pct}" style="width:64px;padding:7px" onchange="cupEd(${i},'pct',this.value)"><input aria-label="Valor mínimo" inputmode="decimal" value="${c.min || 0}" style="width:84px;padding:7px" onchange="cupEd(${i},'min',this.value)"><button class="del" onclick="cupRem(${i})">Remover</button></div></div>`).join("") || '<p class="hint">Nenhum cupom ainda.</p>';
@@ -558,23 +591,29 @@ $("migrar").onclick = async () => {
   marcar(true); desenhar();
 };
 $("busca").oninput = desenhar;
+$("filtroStatus").onchange = desenhar;
 $("cb").oninput = e => { CB = e.target.value.trim(); marcar(true); };
 window.setCor = (id, v) => { P.find(x => x.id === id).cor = v; desenhar(); marcar(true); };
 function semCor() { const n = P.filter(p => !p.cor).length; if (n) alert(n + " produto(s) estão sem cor. Escolha Dourado ou Prata na lista de produtos antes de baixar."); return n; }
+function elegivelFrete(p) {
+  return !!(p && (p.freteGratis === false ? false : p.freteGratis === true || /eleg[ií]vel\\s+ao\\s+frete\\s+gr[aá]tis/i.test((p.desc || "") + " " + (p.detalhes || ""))));
+}
 function desenhar() {
   desenharCats();
   desenharCards();
   desenharCup();
   $("cnt").textContent = P.length;
   const q = $("busca").value.trim().toLowerCase();
-  const l = P.filter(p => !q || String(p.id).includes(q) || p.nome.toLowerCase().includes(q));
+  const filtro = $("filtroStatus").value;
+  const l = P.filter(p => (!q || String(p.id).includes(q) || p.nome.toLowerCase().includes(q))
+    && (filtro === "todos" || (filtro === "disponiveis" && p.disponivel !== false) || (filtro === "esgotados" && p.disponivel === false) || (filtro === "frete" && elegivelFrete(p))));
   $("lista").innerHTML = l.length ? l.map(p => {
     const L = LIN.find(x => x.id === p.linha), T = TIP.find(x => x.id === p.tipo);
     return `<div class="item"><img class="thumb" src="${F[p.foto] || ""}" alt="">
     <div><div class="cod">Cód. ${p.id}</div><div class="nm">${esc(p.nome)}</div>
-    <div class="meta">${esc(L ? L.nome : "")} · ${esc(T ? T.nome : "")} · ${brl(p.preco)}${p.nvar ? " · " + p.nvar + " variações" : ""}</div>
+    <div class="meta">${esc(L ? L.nome : "")} · ${esc(T ? T.nome : "")} · ${brl(p.preco)}${p.nvar ? " · " + p.nvar + " variações" : ""} · ${p.disponivel === false ? "ESGOTADO" : "Disponível"}${elegivelFrete(p) ? " · Frete grátis" : ""}</div>
     <div class="acts"><select aria-label="Cor" onchange="setCor(${p.id},this.value)" style="width:auto;padding:7px"><option value="">⚠ sem cor</option>${COR.map(c => `<option value="${c.id}"${p.cor === c.id ? " selected" : ""}>${esc(c.nome)}</option>`).join("")}</select></div>
-    <div class="acts" style="flex-wrap:wrap"><button class="sec" onclick="editar(${p.id})">Editar</button><input aria-label="Preço" inputmode="decimal" value="${p.preco == null ? "" : p.preco}" placeholder="Consulte" onchange="preco(${p.id},this.value)"><input aria-label="Variações" inputmode="numeric" value="${p.nvar || ""}" placeholder="var." style="width:70px" onchange="setNvar(${p.id},this.value)"><button class="del" onclick="rem(${p.id})">Remover</button></div></div></div>`;
+    <div class="acts" style="flex-wrap:wrap"><button class="sec" onclick="editar(${p.id})">Editar</button><button class="sec" onclick="setDisp(${p.id},${p.disponivel === false ? "true" : "false"})">${p.disponivel === false ? "Reativar" : "Esgotar"}</button><input aria-label="Preço" inputmode="decimal" value="${p.preco == null ? "" : p.preco}" placeholder="Consulte" onchange="preco(${p.id},this.value)"><input aria-label="Variações" inputmode="numeric" value="${p.nvar || ""}" placeholder="var." style="width:70px" onchange="setNvar(${p.id},this.value)"><button class="del" onclick="rem(${p.id})">Remover</button></div></div></div>`;
   }).join("") : `<p class="hint">${P.length ? "Nada encontrado para essa busca." : "Nenhum produto no site. Adicione o primeiro acima."}</p>`;
 }
 function atualizarSelects() {
