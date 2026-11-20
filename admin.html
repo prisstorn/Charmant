@@ -153,6 +153,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <label for="links">Ou cole links de imagens (um por linha)</label><textarea id="links" placeholder="https://..."></textarea>
 <label for="nvar">Variações numeradas na foto (opcional)</label><input id="nvar" inputmode="numeric" placeholder="Ex.: 3, se a foto mostra 3 peças com números 1, 2 e 3">
 <label class="ck"><input type="checkbox" id="freteNovo"> Este produto é elegível ao frete grátis</label>
+<label class="ck"><input type="checkbox" id="bf10Novo"> Black Friday: marcar este produto com 10% OFF (peças antigas)</label><p class="hint">Produtos com preço acima de R$ 40 recebem 10% OFF automaticamente. Marque esta opção também nas peças antigas com preço de R$ 40 ou menos. Os demais recebem 5% OFF.</p>
 <label class="ck"><input type="checkbox" id="dispNovo" checked> Produto disponível para venda</label>
 <p class="hint">O frete grátis vale para peças marcadas com este selo, quando a cliente compra essa peça + pelo menos mais 1 produto da Charmant.</p>
 <p class="hint">O código do produto (5 números) é criado sozinho ao adicionar.</p>
@@ -187,6 +188,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <label for="envar">Variações numeradas na foto (vazio = nenhuma)</label><input id="envar" inputmode="numeric">
 <div id="evars"></div>
 <label class="ck"><input type="checkbox" id="efrete"> Este produto é elegível ao frete grátis</label>
+<label class="ck"><input type="checkbox" id="ebf10"> Black Friday: 10% OFF (marque peças antigas)</label><p class="hint">Acima de R$ 40, o desconto de 10% é automático. Use esta opção para peças antigas de até R$ 40.</p>
 <label class="ck"><input type="checkbox" id="edisponivel" checked> Produto disponível para venda</label>
 <p class="hint">Marque como esgotada somente a variação que acabou. Ela continuará identificada pelo número da foto, mas não poderá ser selecionada.</p>
 <label>Fotos (a primeira é a principal)</label><div class="bgal" id="egal"></div>
@@ -326,12 +328,13 @@ $("addBtn").onclick = async () => {
   keys.forEach((k, i) => F[k] = fin[i]);
   const p = { id, cor: $("cor").value, linha: $("linha").value, tipo: $("tipo").value, nome, desc: desc || nome, preco: pr ? Number(pr) : null, foto: keys[0] };
   if ($("freteNovo").checked) p.freteGratis = true;
+  if ($("bf10Novo").checked) p.blackFriday10 = true;
   if (!$("dispNovo").checked) p.disponivel = false;
   if (keys.length > 1) p.mais = keys.slice(1);
   const nv = Math.floor(Number($("nvar").value)); if (nv >= 2) p.nvar = Math.min(nv, 20);
   if (det) p.detalhes = det;
   P.push(p);
-  ["nome", "desc", "det", "preco", "fotos", "links"].forEach(i => $(i).value = ""); $("nvar").value = ""; $("freteNovo").checked = false; $("dispNovo").checked = true;
+  ["nome", "desc", "det", "preco", "fotos", "links"].forEach(i => $(i).value = ""); $("nvar").value = ""; $("freteNovo").checked = false; $("bf10Novo").checked = false; $("dispNovo").checked = true;
   novas = []; $("prev").innerHTML = "";
   desenhar(); marcar(true); toast("Adicionado! Código " + id);
 };
@@ -520,7 +523,7 @@ window.editar = id => {
   const p = P.find(x => x.id === id); if (!p) return;
   EDI = id; EDF = [p.foto].concat(p.mais || []); EDN = []; EVARS = (p.varEsgotadas || []).slice();
   $("ecod").textContent = "Cód. " + id;
-  $("enome").value = p.nome; $("edesc").value = p.desc || ""; $("edet").value = p.detalhes || ""; $("epreco").value = p.preco == null ? "" : p.preco; $("envar").value = p.nvar || ""; $("efrete").checked = elegivelFrete(p); $("edisponivel").checked = p.disponivel !== false;
+  $("enome").value = p.nome; $("edesc").value = p.desc || ""; $("edet").value = p.detalhes || ""; $("epreco").value = p.preco == null ? "" : p.preco; $("envar").value = p.nvar || ""; $("efrete").checked = elegivelFrete(p); $("ebf10").checked = p.blackFriday10 === true; $("edisponivel").checked = p.disponivel !== false;
   $("ecor").innerHTML = COR.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join(""); $("ecor").value = p.cor || "";
   $("elinha").innerHTML = LIN.map(l => `<option value="${l.id}">${esc(l.nome)}</option>`).join(""); $("elinha").value = p.linha;
   tiposEd(p.tipo); $("est").textContent = ""; edGal(); desenharVarsEd(); $("ed").hidden = false;
@@ -551,6 +554,7 @@ $("eSalvar").onclick = () => {
   if (p.nvar) p.varEsgotadas = EVARS.filter(v => v >= 1 && v <= p.nvar);
   if (!p.varEsgotadas || !p.varEsgotadas.length) delete p.varEsgotadas;
   if ($("efrete").checked) p.freteGratis = true; else p.freteGratis = false;
+  if ($("ebf10").checked) p.blackFriday10 = true; else delete p.blackFriday10;
   if ($("edisponivel").checked) delete p.disponivel; else p.disponivel = false;
   [p.foto].concat(p.mais || []).concat(EDN).filter(k => !EDF.includes(k)).forEach(k => delete F[k]);
   p.foto = EDF[0]; if (EDF.length > 1) p.mais = EDF.slice(1); else delete p.mais;
@@ -611,7 +615,7 @@ function desenhar() {
     const L = LIN.find(x => x.id === p.linha), T = TIP.find(x => x.id === p.tipo);
     return `<div class="item"><img class="thumb" src="${F[p.foto] || ""}" alt="">
     <div><div class="cod">Cód. ${p.id}</div><div class="nm">${esc(p.nome)}</div>
-    <div class="meta">${esc(L ? L.nome : "")} · ${esc(T ? T.nome : "")} · ${brl(p.preco)}${p.nvar ? " · " + p.nvar + " variações" : ""} · ${p.disponivel === false ? "ESGOTADO" : "Disponível"}${elegivelFrete(p) ? " · Frete grátis" : ""}</div>
+    <div class="meta">${esc(L ? L.nome : "")} · ${esc(T ? T.nome : "")} · ${brl(p.preco)}${p.nvar ? " · " + p.nvar + " variações" : ""} · ${p.disponivel === false ? "ESGOTADO" : "Disponível"}${elegivelFrete(p) ? " · Frete grátis" : ""}${p.blackFriday10 ? " · Black Friday 10% (antiga)" : (Number(p.preco) > 40 ? " · Black Friday 10% (preço)" : " · Black Friday 5%")}</div>
     <div class="acts"><select aria-label="Cor" onchange="setCor(${p.id},this.value)" style="width:auto;padding:7px"><option value="">⚠ sem cor</option>${COR.map(c => `<option value="${c.id}"${p.cor === c.id ? " selected" : ""}>${esc(c.nome)}</option>`).join("")}</select></div>
     <div class="acts" style="flex-wrap:wrap"><button class="sec" onclick="editar(${p.id})">Editar</button><button class="sec" onclick="setDisp(${p.id},${p.disponivel === false ? "true" : "false"})">${p.disponivel === false ? "Reativar" : "Esgotar"}</button><input aria-label="Preço" inputmode="decimal" value="${p.preco == null ? "" : p.preco}" placeholder="Consulte" onchange="preco(${p.id},this.value)"><input aria-label="Variações" inputmode="numeric" value="${p.nvar || ""}" placeholder="var." style="width:70px" onchange="setNvar(${p.id},this.value)"><button class="del" onclick="rem(${p.id})">Remover</button></div></div></div>`;
   }).join("") : `<p class="hint">${P.length ? "Nada encontrado para essa busca." : "Nenhum produto no site. Adicione o primeiro acima."}</p>`;
