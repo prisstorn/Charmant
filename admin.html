@@ -153,7 +153,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <label for="links">Ou cole links de imagens (um por linha)</label><textarea id="links" placeholder="https://..."></textarea>
 <label for="nvar">Variações numeradas na foto (opcional)</label><input id="nvar" inputmode="numeric" placeholder="Ex.: 3, se a foto mostra 3 peças com números 1, 2 e 3">
 <label class="ck"><input type="checkbox" id="freteNovo"> Este produto é elegível ao frete grátis</label>
-<label class="ck"><input type="checkbox" id="bf10Novo"> Black Friday: marcar este produto com 10% OFF (peças antigas)</label><p class="hint">Produtos com preço acima de R$ 40 recebem 10% OFF automaticamente. Marque esta opção também nas peças antigas com preço de R$ 40 ou menos. Os demais recebem 5% OFF.</p>
 <label class="ck"><input type="checkbox" id="dispNovo" checked> Produto disponível para venda</label>
 <p class="hint">O frete grátis vale para peças marcadas com este selo, quando a cliente compra essa peça + pelo menos mais 1 produto da Charmant.</p>
 <p class="hint">O código do produto (5 números) é criado sozinho ao adicionar.</p>
@@ -167,6 +166,19 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <div id="lista" style="margin-top:8px"></div>
 <label for="rid" style="margin-top:16px">Remover pelo código</label>
 <div class="inline"><input id="rid" inputmode="numeric" placeholder="Código do produto"><button class="del" id="ridBtn">Remover</button></div>
+</section>
+
+<section>
+<h2>6. Achadinhos afiliados e banners automáticos</h2>
+<p class="hint">Cole seu link de afiliada. O site identifica Shopee ou Mercado Livre pelo endereço e organiza os produtos em uma vitrine com destaque rotativo diário. Sem API: nome, imagem e preço podem ser preenchidos aqui; se não houver dados públicos acessíveis no link, complete manualmente.</p>
+<label for="afUrl">Link de afiliada (obrigatório)</label><input id="afUrl" type="url" placeholder="https://...">
+<label for="afNome">Nome do produto</label><input id="afNome" placeholder="Ex.: Organizador de joias">
+<div class="row2"><div><label for="afPlataforma">Plataforma</label><select id="afPlataforma"><option value="auto">Identificar pelo link</option><option value="Shopee">Shopee</option><option value="Mercado Livre">Mercado Livre</option></select></div><div><label for="afPreco">Preço (opcional)</label><input id="afPreco" placeholder="R$ 29,90"></div></div>
+<label for="afImagem">Link da imagem do produto (opcional)</label><input id="afImagem" type="url" placeholder="https://...">
+<div class="row2"><div><label for="afCategoria">Categoria (opcional)</label><input id="afCategoria" placeholder="Beleza, casa, acessórios..."></div><div><label for="afDestaque">Destaque</label><select id="afDestaque"><option value="nao">Vitrine normal</option><option value="sim">Priorizar no banner</option></select></div></div>
+<div style="margin-top:12px"><button id="afAdd">Adicionar achadinho</button></div>
+<div id="afLista" style="margin-top:12px"></div>
+<p class="hint">O rodízio muda diariamente entre os produtos ativos. O banner usa primeiro os produtos marcados como destaque. Alterações são salvas no HTML quando você baixa ou publica o site.</p>
 </section>
 </div>
 </main>
@@ -188,7 +200,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <label for="envar">Variações numeradas na foto (vazio = nenhuma)</label><input id="envar" inputmode="numeric">
 <div id="evars"></div>
 <label class="ck"><input type="checkbox" id="efrete"> Este produto é elegível ao frete grátis</label>
-<label class="ck"><input type="checkbox" id="ebf10"> Black Friday: 10% OFF (marque peças antigas)</label><p class="hint">Acima de R$ 40, o desconto de 10% é automático. Use esta opção para peças antigas de até R$ 40.</p>
 <label class="ck"><input type="checkbox" id="edisponivel" checked> Produto disponível para venda</label>
 <p class="hint">Marque como esgotada somente a variação que acabou. Ela continuará identificada pelo número da foto, mas não poderá ser selecionada.</p>
 <label>Fotos (a primeira é a principal)</label><div class="bgal" id="egal"></div>
@@ -201,7 +212,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <div id="toast"></div>
 
 <script>
-let src = "", rg = null, P = [], F = {}, LIN = [], TIP = [], SOB = [], CAR = [], CUP = [], COR = [], CB = "", dirty = false, novas = [];
+let src = "", rg = null, P = [], F = {}, LIN = [], TIP = [], SOB = [], CAR = [], CUP = [], COR = [], AFI = [], CB = "", dirty = false, novas = [];
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const brl = n => n == null ? "Consulte" : n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -225,13 +236,13 @@ async function carregar(texto) {
   const srcAnt = src, rgAnt = rg;
   try {
     src = texto;
-    const p = lit("PRODUTOS", "\n];", 2), fo = lit("FOTOS", "};", 1);
+    const p = lit("PRODUTOS", "\n];", 2), fo = lit("FOTOS", "};", 1), af = lit("AFILIADOS", "\n];", 2);
     const li = lit("LINHAS", "\n];", 2), ti = lit("TIPOS", "\n];", 2), so = lit("SOBRE", "\n];", 2), co = lit("CORES", "\n];", 2), cb = lit("CUIDADOS_BASE", "\n];", 2), ka = lit("CARDS", "\n];", 2), cu = lit("CUPONS", "\n];", 2);
-    rg = [["L", li], ["T", ti], ["P", p], ["S", so], ["F", fo], ["C", cb], ["K", ka], ["U", cu]];
-    P = ler(p[2]); F = ler(fo[2]); LIN = ler(li[2]); TIP = ler(ti[2]); SOB = ler(so[2]); CAR = ler(ka[2]); CUP = ler(cu[2]); P.forEach(p => { if (p.vars) { p.mais = p.vars.slice(1); delete p.vars; } }); COR = ler(co[2]); CB = ler(cb[2])[0] || "";
+    rg = [["L", li], ["T", ti], ["P", p], ["S", so], ["F", fo], ["C", cb], ["K", ka], ["U", cu], ["A", af]];
+    P = ler(p[2]); F = ler(fo[2]); LIN = ler(li[2]); TIP = ler(ti[2]); SOB = ler(so[2]); CAR = ler(ka[2]); CUP = ler(cu[2]); AFI = ler(af[2]); P.forEach(p => { if (p.vars) { p.mais = p.vars.slice(1); delete p.vars; } }); COR = ler(co[2]); CB = ler(cb[2])[0] || "";
     $("cb").value = CB; $("cor").innerHTML = '<option value="">Escolha…</option>' + COR.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join("");
     $("painel").hidden = false; $("bar").hidden = false;
-    atualizarSelects(); desenhar(); marcar(false);
+    atualizarSelects(); desenhar(); desenharAfiliados(); marcar(false);
     $("st").textContent = "Nenhuma alteração ainda"; $("st").className = "";
     toast("Site carregado com " + P.length + " produtos");
     return true;
@@ -328,13 +339,12 @@ $("addBtn").onclick = async () => {
   keys.forEach((k, i) => F[k] = fin[i]);
   const p = { id, cor: $("cor").value, linha: $("linha").value, tipo: $("tipo").value, nome, desc: desc || nome, preco: pr ? Number(pr) : null, foto: keys[0] };
   if ($("freteNovo").checked) p.freteGratis = true;
-  if ($("bf10Novo").checked) p.blackFriday10 = true;
   if (!$("dispNovo").checked) p.disponivel = false;
   if (keys.length > 1) p.mais = keys.slice(1);
   const nv = Math.floor(Number($("nvar").value)); if (nv >= 2) p.nvar = Math.min(nv, 20);
   if (det) p.detalhes = det;
   P.push(p);
-  ["nome", "desc", "det", "preco", "fotos", "links"].forEach(i => $(i).value = ""); $("nvar").value = ""; $("freteNovo").checked = false; $("bf10Novo").checked = false; $("dispNovo").checked = true;
+  ["nome", "desc", "det", "preco", "fotos", "links"].forEach(i => $(i).value = ""); $("nvar").value = ""; $("freteNovo").checked = false; $("dispNovo").checked = true;
   novas = []; $("prev").innerHTML = "";
   desenhar(); marcar(true); toast("Adicionado! Código " + id);
 };
@@ -523,7 +533,7 @@ window.editar = id => {
   const p = P.find(x => x.id === id); if (!p) return;
   EDI = id; EDF = [p.foto].concat(p.mais || []); EDN = []; EVARS = (p.varEsgotadas || []).slice();
   $("ecod").textContent = "Cód. " + id;
-  $("enome").value = p.nome; $("edesc").value = p.desc || ""; $("edet").value = p.detalhes || ""; $("epreco").value = p.preco == null ? "" : p.preco; $("envar").value = p.nvar || ""; $("efrete").checked = elegivelFrete(p); $("ebf10").checked = p.blackFriday10 === true; $("edisponivel").checked = p.disponivel !== false;
+  $("enome").value = p.nome; $("edesc").value = p.desc || ""; $("edet").value = p.detalhes || ""; $("epreco").value = p.preco == null ? "" : p.preco; $("envar").value = p.nvar || ""; $("efrete").checked = elegivelFrete(p); $("edisponivel").checked = p.disponivel !== false;
   $("ecor").innerHTML = COR.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join(""); $("ecor").value = p.cor || "";
   $("elinha").innerHTML = LIN.map(l => `<option value="${l.id}">${esc(l.nome)}</option>`).join(""); $("elinha").value = p.linha;
   tiposEd(p.tipo); $("est").textContent = ""; edGal(); desenharVarsEd(); $("ed").hidden = false;
@@ -554,7 +564,6 @@ $("eSalvar").onclick = () => {
   if (p.nvar) p.varEsgotadas = EVARS.filter(v => v >= 1 && v <= p.nvar);
   if (!p.varEsgotadas || !p.varEsgotadas.length) delete p.varEsgotadas;
   if ($("efrete").checked) p.freteGratis = true; else p.freteGratis = false;
-  if ($("ebf10").checked) p.blackFriday10 = true; else delete p.blackFriday10;
   if ($("edisponivel").checked) delete p.disponivel; else p.disponivel = false;
   [p.foto].concat(p.mais || []).concat(EDN).filter(k => !EDF.includes(k)).forEach(k => delete F[k]);
   p.foto = EDF[0]; if (EDF.length > 1) p.mais = EDF.slice(1); else delete p.mais;
@@ -615,7 +624,7 @@ function desenhar() {
     const L = LIN.find(x => x.id === p.linha), T = TIP.find(x => x.id === p.tipo);
     return `<div class="item"><img class="thumb" src="${F[p.foto] || ""}" alt="">
     <div><div class="cod">Cód. ${p.id}</div><div class="nm">${esc(p.nome)}</div>
-    <div class="meta">${esc(L ? L.nome : "")} · ${esc(T ? T.nome : "")} · ${brl(p.preco)}${p.nvar ? " · " + p.nvar + " variações" : ""} · ${p.disponivel === false ? "ESGOTADO" : "Disponível"}${elegivelFrete(p) ? " · Frete grátis" : ""}${p.blackFriday10 ? " · Black Friday 10% (antiga)" : (Number(p.preco) > 40 ? " · Black Friday 10% (preço)" : " · Black Friday 5%")}</div>
+    <div class="meta">${esc(L ? L.nome : "")} · ${esc(T ? T.nome : "")} · ${brl(p.preco)}${p.nvar ? " · " + p.nvar + " variações" : ""} · ${p.disponivel === false ? "ESGOTADO" : "Disponível"}${elegivelFrete(p) ? " · Frete grátis" : ""}</div>
     <div class="acts"><select aria-label="Cor" onchange="setCor(${p.id},this.value)" style="width:auto;padding:7px"><option value="">⚠ sem cor</option>${COR.map(c => `<option value="${c.id}"${p.cor === c.id ? " selected" : ""}>${esc(c.nome)}</option>`).join("")}</select></div>
     <div class="acts" style="flex-wrap:wrap"><button class="sec" onclick="editar(${p.id})">Editar</button><button class="sec" onclick="setDisp(${p.id},${p.disponivel === false ? "true" : "false"})">${p.disponivel === false ? "Reativar" : "Esgotar"}</button><input aria-label="Preço" inputmode="decimal" value="${p.preco == null ? "" : p.preco}" placeholder="Consulte" onchange="preco(${p.id},this.value)"><input aria-label="Variações" inputmode="numeric" value="${p.nvar || ""}" placeholder="var." style="width:70px" onchange="setNvar(${p.id},this.value)"><button class="del" onclick="rem(${p.id})">Remover</button></div></div></div>`;
   }).join("") : `<p class="hint">${P.length ? "Nada encontrado para essa busca." : "Nenhum produto no site. Adicione o primeiro acima."}</p>`;
@@ -673,7 +682,7 @@ window.remSub = id => {
 };
 function gerar() {
   const arr = a => "[\n" + a.map(x => "  " + JSON.stringify(x)).join(",\n") + "\n]";
-  const val = { L: arr(LIN), T: arr(TIP), P: arr(P), S: arr(SOB), C: arr([CB]), K: arr(CAR), U: arr(CUP), F: "{ " + Object.entries(F).map(([k, v]) => JSON.stringify(k) + ": " + JSON.stringify(v)).join(", ") + " }" };
+  const val = { L: arr(LIN), T: arr(TIP), P: arr(P), S: arr(SOB), C: arr([CB]), K: arr(CAR), U: arr(CUP), A: arr(AFI), F: "{ " + Object.entries(F).map(([k, v]) => JSON.stringify(k) + ": " + JSON.stringify(v)).join(", ") + " }" };
   let out = "", pos = 0;
   rg.slice().sort((a, b) => a[1][0] - b[1][0]).forEach(([k, r]) => { out += src.slice(pos, r[0]) + val[k].replace(/<\//g, "<\\/"); pos = r[1]; });
   return out + src.slice(pos);
@@ -706,6 +715,29 @@ $("copiar").onclick = async () => {
   marcar(false);
 };
 window.onbeforeunload = e => { if (dirty) { e.preventDefault(); e.returnValue = ""; } };
+
+function plataformaAfiliado(url, escolha) {
+  if (escolha && escolha !== "auto") return escolha;
+  if (/shopee/i.test(url)) return "Shopee";
+  if (/mercadolivre|mercadolivre|mercadolivre\.com|meli\.la/i.test(url)) return "Mercado Livre";
+  return "Link afiliado";
+}
+function desenharAfiliados() {
+  const el=$("afLista"); if(!el) return;
+  if(!AFI.length){el.innerHTML='<p class="hint">Nenhum achadinho cadastrado ainda.</p>';return;}
+  el.innerHTML=AFI.map((p,i)=>`<div class="vitem" style="display:block;margin:7px 0"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>${esc(p.titulo||"Achadinho sem nome")}</b><span>${p.ativo===false?"Pausado":"Ativo"}</span></div><small>${esc(p.plataforma||"Link afiliado")} · ${esc(p.preco||"Preço não informado")} ${p.destaque?"· Destaque":""}</small><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px"><button class="sec" onclick="alternarAfiliado(${i})">${p.ativo===false?"Ativar":"Pausar"}</button><button class="del" onclick="removerAfiliado(${i})">Remover</button></div></div>`).join("");
+}
+window.alternarAfiliado = i => { if(!AFI[i])return; AFI[i].ativo=AFI[i].ativo===false; desenharAfiliados(); marcar(true); };
+window.removerAfiliado = i => { if(!AFI[i])return; if(!confirm("Remover este achadinho da vitrine?"))return; AFI.splice(i,1); desenharAfiliados(); marcar(true); };
+$("afAdd").onclick = () => {
+  const url=$("afUrl").value.trim();
+  if(!/^https?:\/\//i.test(url)){alert("Cole um link válido começando com https://");return;}
+  const plataforma=plataformaAfiliado(url,$("afPlataforma").value);
+  AFI.push({id:Date.now()+Math.floor(Math.random()*1000),url,titulo:$("afNome").value.trim()||"Achadinho Charmant",plataforma,preco:$("afPreco").value.trim(),imagem:$("afImagem").value.trim(),categoria:$("afCategoria").value.trim(),destaque:$("afDestaque").value==="sim",ativo:true});
+  ["afUrl","afNome","afPreco","afImagem","afCategoria"].forEach(id=>$(id).value=""); $("afPlataforma").value="auto"; $("afDestaque").value="nao";
+  desenharAfiliados(); marcar(true); toast("Achadinho adicionado");
+};
+
 </script>
 </body>
 </html>
