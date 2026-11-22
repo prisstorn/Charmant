@@ -174,7 +174,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <label for="afUrl">Link de afiliada (obrigatório)</label><input id="afUrl" type="url" placeholder="https://...">
 <label for="afNome">Nome do produto</label><input id="afNome" placeholder="Ex.: Organizador de joias">
 <div class="row2"><div><label for="afPlataforma">Plataforma</label><select id="afPlataforma"><option value="auto">Identificar pelo link</option><option value="Shopee">Shopee</option><option value="Mercado Livre">Mercado Livre</option></select></div><div><label for="afPreco">Preço (opcional)</label><input id="afPreco" placeholder="R$ 29,90"></div></div>
-<label for="afImagem">Link da imagem do produto (opcional)</label><input id="afImagem" type="url" placeholder="https://...">
+<label for="afImagem">Imagem do produto</label><input id="afImagem" type="url" placeholder="Será preenchido ao buscar no link do produto">
+<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px"><button type="button" class="sec" id="afBuscarImagem">Buscar imagem pelo link do produto</button><span id="afImagemStatus" class="hint" style="margin:0">Cole o link do produto acima; tentaremos localizar a foto automaticamente.</span></div>
 <div class="row2"><div><label for="afCategoria">Categoria (opcional)</label><input id="afCategoria" placeholder="Beleza, casa, acessórios..."></div><div><label for="afDestaque">Destaque</label><select id="afDestaque"><option value="nao">Vitrine normal</option><option value="sim">Priorizar no banner</option></select></div></div>
 <div style="margin-top:12px"><button id="afAdd">Adicionar achadinho</button></div>
 <div id="afLista" style="margin-top:12px"></div>
@@ -722,6 +723,26 @@ function plataformaAfiliado(url, escolha) {
   if (/mercadolivre|mercadolivre|mercadolivre\.com|meli\.la/i.test(url)) return "Mercado Livre";
   return "Link afiliado";
 }
+async function buscarImagemAchadinho() {
+  const url = $("afUrl").value.trim();
+  const campo = $("afImagem"), status = $("afImagemStatus"), botao = $("afBuscarImagem");
+  if (!/^https?:\/\//i.test(url)) { status.textContent = "Cole primeiro um link válido do produto."; return; }
+  botao.disabled = true; status.textContent = "Procurando a imagem do produto…";
+  try {
+    const endpoint = "https://api.microlink.io/?url=" + encodeURIComponent(url);
+    const resposta = await fetch(endpoint, { headers: { "Accept": "application/json" } });
+    if (!resposta.ok) throw new Error("O serviço de leitura não respondeu.");
+    const json = await resposta.json();
+    const imagem = json && json.data && json.data.image && json.data.image.url;
+    if (!imagem || !/^https?:\/\//i.test(imagem)) throw new Error("A loja não disponibilizou uma imagem pública neste link.");
+    campo.value = imagem;
+    status.textContent = "Imagem encontrada! Confira o endereço antes de adicionar.";
+  } catch (erro) {
+    status.textContent = "Não foi possível localizar automaticamente. A loja pode bloquear a leitura; você ainda pode colar o link direto da imagem.";
+  } finally { botao.disabled = false; }
+}
+$("afBuscarImagem").onclick = buscarImagemAchadinho;
+$("afUrl").addEventListener("change", () => { if ($("afUrl").value.trim()) buscarImagemAchadinho(); });
 function desenharAfiliados() {
   const el=$("afLista"); if(!el) return;
   if(!AFI.length){el.innerHTML='<p class="hint">Nenhum achadinho cadastrado ainda.</p>';return;}
@@ -735,6 +756,7 @@ $("afAdd").onclick = () => {
   const plataforma=plataformaAfiliado(url,$("afPlataforma").value);
   AFI.push({id:Date.now()+Math.floor(Math.random()*1000),url,titulo:$("afNome").value.trim()||"Achadinho Charmant",plataforma,preco:$("afPreco").value.trim(),imagem:$("afImagem").value.trim(),categoria:$("afCategoria").value.trim(),destaque:$("afDestaque").value==="sim",ativo:true});
   ["afUrl","afNome","afPreco","afImagem","afCategoria"].forEach(id=>$(id).value=""); $("afPlataforma").value="auto"; $("afDestaque").value="nao";
+  $("afImagemStatus").textContent = "Cole o link do produto acima; tentaremos localizar a foto automaticamente.";
   desenharAfiliados(); marcar(true); toast("Achadinho adicionado");
 };
 
