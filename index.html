@@ -321,8 +321,10 @@ button:disabled{opacity:.48;cursor:not-allowed;filter:grayscale(.5)}
 .comp-card button{width:100%;margin-top:5px;padding:6px 3px;border:1px solid var(--gedge);border-radius:5px;background:linear-gradient(var(--g1),var(--g2));color:var(--ink);font:700 .62rem "Playfair Display",Georgia,serif}
 .comp-vazio{color:var(--mut);font-size:.88rem;text-align:center}
 /* Ação principal permanece acessível enquanto o conteúdo do produto rola */
-#det .sheet{position:relative;overflow-y:auto;overscroll-behavior:contain;padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))}
-#det .fim{position:absolute;left:14px;right:14px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:12;width:calc(100% - 28px);margin:0;box-shadow:0 -8px 16px rgba(247,232,202,.92),0 2px 0 var(--gsh);border-radius:8px}
+#det .sheet{display:flex;flex-direction:column;height:92%;max-height:92%;min-height:0;overflow:hidden;overscroll-behavior:contain;padding:16px 18px 0}
+#detc{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:14px}
+#det-action{flex:0 0 auto;position:relative;z-index:5;padding:10px 0 calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,rgba(247,232,202,0),var(--p2) 18%)}
+#det-action .fim{display:block;position:static;width:100%;min-height:58px;margin:0;box-shadow:0 2px 0 var(--gsh);border-radius:8px}
 @media(max-width:380px){.notas-preco{gap:6px}.nota{padding:5px 2px}.nota-topo,.nota-rodape{letter-spacing:0}.comp-card{flex-basis:108px}.comp-card>div:first-child{width:66px;height:66px}}
 
 </style>
@@ -378,7 +380,7 @@ button:disabled{opacity:.48;cursor:not-allowed;filter:grayscale(.5)}
 <main><div class="grid1" id="sobre"></div></main>
 </div>
 <div id="menu" onclick="if(event.target===this)fecharMenu()"><div class="gav"><button class="x2" onclick="fecharMenu()" aria-label="Fechar">✕</button><div class="mtit gold">Menu</div><div id="mconteudo"></div></div></div>
-<div id="det" onclick="if(event.target===this)fecharDet()"><div class="sheet"><button class="x" onclick="fecharDet()" aria-label="Fechar">✕</button><div id="detc"></div></div></div>
+<div id="det" onclick="if(event.target===this)fecharDet()"><div class="sheet"><button class="x" onclick="fecharDet()" aria-label="Fechar">✕</button><div id="detc"></div><div id="det-action"></div></div></div>
 <div id="zoom" onclick="fecharZoom()"><img alt=""></div>
 <div id="dica1" class="dica d1" role="status" hidden><button class="dx" onclick="fecharDica(1)" aria-label="Fechar dica">✕</button><b>Não sabe como comprar?</b><span>Escolha um produto abaixo ↓</span><button class="dn" onclick="dicasOff()">Não mostrar mais dicas</button></div>
 <div id="dica2" class="dica d2" role="status" hidden><button class="dx" onclick="fecharDica(2)" aria-label="Fechar dica">✕</button><b>Produto adicionado ✓</b><span>Agora toque em “Ver carrinho” para finalizar ↓</span></div>
@@ -1050,9 +1052,9 @@ function desenharDet() {
     <p class="dd">${p.detalhes || descSemFrete(p)}</p>
     ${CUIDADOS_BASE[0] ? `<div class="dcuid"><b>Cuidados básicos</b><p>${CUIDADOS_BASE[0]}</p></div>` : ""}
     <div class="dpreco">${precoDetalheHTML(p)}</div>
-    ${botao}
     <button class="cpt" onclick="compartilhar(${p.id})">Compartilhar</button>
     <a class="dwa" href="${wa}" target="_blank" rel="noopener">DÚVIDAS? FALE CONOSCO PELO WHATSAPP</a>`;
+  document.getElementById("det-action").innerHTML = botao;
 }
 function perguntar(id) {
   const p = PRODUTOS.find(x => x.id === id);
