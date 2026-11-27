@@ -312,8 +312,8 @@ button:disabled{opacity:.48;cursor:not-allowed;filter:grayscale(.5)}
 .comp-sub{display:none}
 .comp-lista{display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;padding:1px 1px 5px;scroll-snap-type:x proximity}
 .comp-card{flex:0 0 116px;min-width:0;padding:6px;border:1px solid rgba(160,115,52,.3);border-radius:8px;background:rgba(255,250,235,.72);text-align:center;color:var(--ink);scroll-snap-align:start}
-.comp-card>div:first-child{width:72px;height:72px;margin:0 auto;overflow:hidden;border-radius:6px;background:#fffaf0;display:flex;align-items:center;justify-content:center}
-.comp-card .comp-foto{width:100%;height:100%;object-fit:contain!important;object-position:center!important;border-radius:6px;display:block;transform:none!important}
+.comp-card>div:first-child{width:72px;height:72px;margin:0 auto;overflow:hidden;border-radius:6px;background:#fffaf0;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.comp-card>div:first-child img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;object-position:center!important;border-radius:6px;transform:none!important}
 .comp-card strong{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.2em;margin:5px 0 2px;font:700 .76rem "Playfair Display",Georgia,serif;line-height:1.1}
 .comp-card .comp-preco{font-weight:800;color:var(--wine);font-size:.78rem;line-height:1.2}
 .comp-card .comp-preco small{display:none}
@@ -321,8 +321,8 @@ button:disabled{opacity:.48;cursor:not-allowed;filter:grayscale(.5)}
 .comp-card button{width:100%;margin-top:5px;padding:6px 3px;border:1px solid var(--gedge);border-radius:5px;background:linear-gradient(var(--g1),var(--g2));color:var(--ink);font:700 .62rem "Playfair Display",Georgia,serif}
 .comp-vazio{color:var(--mut);font-size:.88rem;text-align:center}
 /* Ação principal permanece acessível enquanto o conteúdo do produto rola */
-#det .sheet{overflow-y:auto;overscroll-behavior:contain;padding-bottom:calc(78px + env(safe-area-inset-bottom,0px))}
-#det .fim{position:sticky;bottom:0;z-index:8;margin:12px -2px 4px;width:calc(100% + 4px);box-shadow:0 -8px 16px rgba(247,232,202,.92),0 2px 0 var(--gsh);border-radius:8px}
+#det .sheet{position:relative;overflow-y:auto;overscroll-behavior:contain;padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+#det .fim{position:absolute;left:14px;right:14px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:12;width:calc(100% - 28px);margin:0;box-shadow:0 -8px 16px rgba(247,232,202,.92),0 2px 0 var(--gsh);border-radius:8px}
 @media(max-width:380px){.notas-preco{gap:6px}.nota{padding:5px 2px}.nota-topo,.nota-rodape{letter-spacing:0}.comp-card{flex-basis:108px}.comp-card>div:first-child{width:66px;height:66px}}
 
 </style>
