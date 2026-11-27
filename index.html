@@ -307,18 +307,23 @@ button:disabled{opacity:.48;cursor:not-allowed;filter:grayscale(.5)}
 .nota-destaque:active .nota-circulo{transform:scale(.94)}
 .nota-destaque:focus-visible .nota-circulo{outline:2px solid #fff1d0;outline-offset:3px}
 /* Vitrines inteligentes de produtos complementares */
-.comp-wrap{margin:18px 0 10px;padding:13px 11px;border:1px solid rgba(217,173,95,.65);border-radius:12px;background:linear-gradient(145deg,rgba(255,239,202,.17),rgba(40,4,12,.12));}
-.comp-titulo{margin:0 0 3px;text-align:center;color:var(--wine);font:700 1.12rem "Playfair Display",Georgia,serif}
-.comp-sub{margin:0 0 10px;text-align:center;color:var(--mut);font-size:.9rem}
-.comp-lista{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.comp-card{min-width:0;padding:7px;border:1px solid rgba(160,115,52,.35);border-radius:9px;background:rgba(255,250,235,.72);text-align:center;color:var(--ink)}
-.comp-card .comp-foto{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:6px;display:block}
-.comp-card strong{display:block;margin:6px 0 2px;font:700 .88rem "Playfair Display",Georgia,serif;line-height:1.2}
-.comp-card .comp-preco{font-weight:800;color:var(--wine);font-size:.94rem}
-.comp-card .comp-motivo{display:block;min-height:1.2em;color:var(--mut);font-size:.75rem}
-.comp-card button{width:100%;margin-top:6px;padding:8px 4px;border:1px solid var(--gedge);border-radius:6px;background:linear-gradient(var(--g1),var(--g2));color:var(--ink);font:700 .68rem "Playfair Display",Georgia,serif}
+.comp-wrap{margin:10px 0 14px;padding:9px 9px 10px;border:1px solid rgba(217,173,95,.55);border-radius:10px;background:linear-gradient(145deg,rgba(255,239,202,.14),rgba(40,4,12,.09));}
+.comp-titulo{margin:0 0 7px;text-align:left;color:var(--wine);font:700 .98rem "Playfair Display",Georgia,serif}
+.comp-sub{display:none}
+.comp-lista{display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;padding:1px 1px 5px;scroll-snap-type:x proximity}
+.comp-card{flex:0 0 116px;min-width:0;padding:6px;border:1px solid rgba(160,115,52,.3);border-radius:8px;background:rgba(255,250,235,.72);text-align:center;color:var(--ink);scroll-snap-align:start}
+.comp-card>div:first-child{width:72px;height:72px;margin:0 auto;overflow:hidden;border-radius:6px}
+.comp-card .comp-foto{width:100%;height:100%;object-fit:cover;border-radius:6px;display:block}
+.comp-card strong{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.2em;margin:5px 0 2px;font:700 .76rem "Playfair Display",Georgia,serif;line-height:1.1}
+.comp-card .comp-preco{font-weight:800;color:var(--wine);font-size:.78rem;line-height:1.2}
+.comp-card .comp-preco small{display:none}
+.comp-card .comp-motivo{display:none}
+.comp-card button{width:100%;margin-top:5px;padding:6px 3px;border:1px solid var(--gedge);border-radius:5px;background:linear-gradient(var(--g1),var(--g2));color:var(--ink);font:700 .62rem "Playfair Display",Georgia,serif}
 .comp-vazio{color:var(--mut);font-size:.88rem;text-align:center}
-@media(max-width:380px){.notas-preco{gap:6px}.nota{padding:5px 2px}.nota-topo,.nota-rodape{letter-spacing:0}.comp-lista{gap:7px}}
+/* Ação principal permanece acessível enquanto o conteúdo do produto rola */
+#det .sheet{overflow-y:auto;overscroll-behavior:contain;padding-bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+#det .fim{position:sticky;bottom:0;z-index:8;margin:12px -2px 4px;width:calc(100% + 4px);box-shadow:0 -8px 16px rgba(247,232,202,.92),0 2px 0 var(--gsh);border-radius:8px}
+@media(max-width:380px){.notas-preco{gap:6px}.nota{padding:5px 2px}.nota-topo,.nota-rodape{letter-spacing:0}.comp-card{flex-basis:108px}.comp-card>div:first-child{width:66px;height:66px}}
 
 </style>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5102740909764926"
@@ -741,14 +746,14 @@ function cardComplementoHTML(item) {
   const preco = precoComDesconto(p);
   const motivo = item.comuns.length ? `Combina pelo estilo` : (TIPOS_COMPLEMENTARES[item.p.tipo] ? "Completa sua combinação" : "Selecionado para combinar");
   const acao = p.nvar > 1 ? `abrirDet(${p.id})` : `add(${p.id})`;
-  const rotulo = p.nvar > 1 ? "ESCOLHER OPÇÕES" : "ADICIONAR";
+  const rotulo = p.nvar > 1 ? "OPÇÕES" : "+ ADICIONAR";
   const valor = p.preco == null ? "Consulte" : preco != null ? `<s style="font-size:.72rem;opacity:.65">${brl(p.preco)}</s> ${brl(preco)} <small style="display:block">${bfPctAoAdicionar(p)}% OFF</small>` : brl(p.preco);
-  return `<article class="comp-card" data-prod-id="${p.id}"><div onclick="abrirDet(${p.id})">${foto(p)}</div><strong>${p.nome}</strong><span class="comp-motivo">${motivo}</span><div class="comp-preco">${valor}</div><button type="button" onclick="${acao}">${rotulo}</button></article>`;
+  return `<article class="comp-card" data-prod-id="${p.id}"><div onclick="abrirDet(${p.id})">${foto(p)}</div><strong>${p.nome}</strong><div class="comp-preco">${valor}</div><button type="button" onclick="${acao}">${rotulo}</button></article>`;
 }
 function complementosHTML(base, titulo = "Complete seu look") {
   const recs = recomendacoesInteligentes(base, 4);
   if (!recs.length) return "";
-  return `<section class="comp-wrap"><h3 class="comp-titulo">✦ ${titulo}</h3><p class="comp-sub">Sugestões escolhidas para combinar com suas peças</p><div class="comp-lista">${recs.map(cardComplementoHTML).join("")}</div></section>`;
+  return `<section class="comp-wrap"><h3 class="comp-titulo">${titulo}:</h3><div class="comp-lista">${recs.map(cardComplementoHTML).join("")}</div></section>`;
 }
 function renderComplementosCarrinho() {
   const alvo = document.getElementById("complementos-carrinho");
@@ -1036,6 +1041,7 @@ function desenharDet() {
   const wa = `https://wa.me/${LOJA.whatsapp}?text=${encodeURIComponent("Olá! Tenho uma dúvida sobre: " + p.nome + " (Cód. " + p.id + (vr && detVar ? ", variação " + detVar : "") + ")" + fotoLink(p))}`;
   document.getElementById("detc").innerHTML = `
     <div class="dfoto"><img src="${FOTOS[g[detFoto]]}" alt="${p.nome}" onclick="zoom()"><span class="dz">toque para ampliar</span></div>${mini}
+    ${complementosHTML(p, "Complete seu look")}
     <div class="dtags"><span>${C ? C.nome : ""}</span><span>${L ? L.nome : ""}</span><span>${T ? T.nome : ""}</span></div>
     <h2>${p.nome}</h2>
     <div class="dcod">Cód. ${p.id}</div>
@@ -1045,7 +1051,6 @@ function desenharDet() {
     ${CUIDADOS_BASE[0] ? `<div class="dcuid"><b>Cuidados básicos</b><p>${CUIDADOS_BASE[0]}</p></div>` : ""}
     <div class="dpreco">${precoDetalheHTML(p)}</div>
     ${botao}
-    ${complementosHTML(p, "Complete seu look")}
     <button class="cpt" onclick="compartilhar(${p.id})">Compartilhar</button>
     <a class="dwa" href="${wa}" target="_blank" rel="noopener">DÚVIDAS? FALE CONOSCO PELO WHATSAPP</a>`;
 }
